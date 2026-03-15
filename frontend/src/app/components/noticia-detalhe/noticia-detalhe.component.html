@@ -1,0 +1,51 @@
+@if (carregando()) {
+  <div class="loading-state">
+    <div class="spinner">↻</div>
+    <p>Carregando notícia...</p>
+  </div>
+} @else if (erro()) {
+  <div class="empty-state glass-panel animate-fade-in">
+    <div class="icon">😢</div>
+    <h3>Ops!</h3>
+    <p>{{ erro() }}</p>
+    <a routerLink="/" class="btn btn-primary">Voltar para Home</a>
+  </div>
+} @else if (noticia()) {
+  <article class="noticia-article animate-fade-in">
+    <header class="article-header">
+      <div class="badges">
+        <span class="badge">{{ noticia()!.categoriaId }}</span>
+      </div>
+      <h1 class="article-title">{{ noticia()!.titulo }}</h1>
+      <p class="article-summary">{{ noticia()!.resumo }}</p>
+
+      <div class="article-meta">
+        <div class="author-info">
+          <div class="avatar">👤</div>
+          <div>
+            <span class="author-name">Autor ID: {{ noticia()!.autorId }}</span>
+            <span class="publish-date">{{ noticia()!.publicadoEm | date:'longDate' }} · {{ noticia()!.visualizacoes }} visualizações</span>
+          </div>
+        </div>
+        
+        @if (isAutor()) {
+          <div class="actions">
+            <a [routerLink]="['/editar-noticia', noticia()!.id]" class="btn btn-secondary btn-sm">
+              ✏️ Editar Notícia
+            </a>
+          </div>
+        }
+      </div>
+    </header>
+
+    @if (noticia()!.imagemUrl) {
+      <figure class="article-cover">
+        <img [src]="noticia()!.imagemUrl" [alt]="noticia()!.titulo">
+      </figure>
+    }
+
+    <!-- Aqui renderizamos o conteúdo tipado parseado do JSON do BD -->
+    <div class="article-content" [innerHTML]="getHtmlConteudo(noticia()!.conteudo)">
+    </div>
+  </article>
+}

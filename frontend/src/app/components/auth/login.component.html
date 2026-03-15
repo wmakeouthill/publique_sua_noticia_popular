@@ -1,0 +1,30 @@
+<div class="login-container animate-fade-in">
+  <div class="login-card glass-panel">
+    <div class="logo">
+      <span class="icon">📰</span>
+    </div>
+    <h2>Bem-vindo ao Portal</h2>
+    <p>Acesse sua conta para publicar notícias e criar seu feed personalizado.</p>
+
+    <!-- Usamos Mock login se não tiver o enviroment configurado de verdade durante dev -->
+    <div class="auth-buttons">
+      @if (carregando()) {
+        <div class="loading">
+          <div class="spinner">↻</div>
+          Autenticando...
+        </div>
+      } @else {
+        <!-- Na vida real você coloca a div com classe g_id_signin e configura o Google OAuth via script -->
+        <button class="btn btn-primary google-mock-btn" (click)="mockLogin()">
+          <span class="g-icon">G</span> Continuar com Google (Mock)
+        </button>
+      }
+    </div>
+
+    @if (hasError) {
+      <div class="error-box">
+        Houve um erro ao tentar autenticar. Tente novamente mais tarde.
+      </div>
+    }
+  </div>
+</div>
