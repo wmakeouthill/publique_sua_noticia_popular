@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315113000-ajustar-tipo-coluna-titulo-noticias-postgresql
+      author: portal-noticias
+      preConditions:
+        - onFail: MARK_RAN
+        - onError: MARK_RAN
+        - dbms:
+            type: postgresql
+        - tableExists:
+            tableName: noticias
+        - columnExists:
+            tableName: noticias
+            columnName: titulo
+      changes:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DO $$
+              BEGIN
+                IF EXISTS (
+                  SELECT 1
+                  FROM information_schema.columns
+                  WHERE table_name = 'noticias'
+                    AND column_name = 'titulo'
+                    AND table_schema = current_schema()
+                    AND data_type = 'bytea'
+                ) THEN
+                  ALTER TABLE noticias
+                    ALTER COLUMN titulo TYPE varchar(255)
+                    USING convert_from(titulo, 'UTF8');
+                END IF;
+              END $$;
+      rollback:
+        - sql:
+            splitStatements: false
+            stripComments: true
+            sql: |
+              DO $$
+              BEGIN
+                IF EXISTS (
+                  SELECT 1
+                  FROM information_schema.columns
+                  WHERE table_name = 'noticias'
+                    AND column_name = 'titulo'
+                    AND table_schema = current_schema()
+                    AND data_type <> 'bytea'
+                ) THEN
+                  ALTER TABLE noticias
+                    ALTER COLUMN titulo TYPE bytea
+                    USING convert_to(titulo, 'UTF8');
+                END IF;
+              END $$;

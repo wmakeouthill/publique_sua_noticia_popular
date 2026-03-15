@@ -1,0 +1,78 @@
+@if (carregando()) {
+  <div class="glass-panel text-center p-xl">
+    <div class="spinner">↻</div>
+    <h3>Carregando Editor...</h3>
+  </div>
+} @else {
+  <div class="editor-container animate-fade-in">
+    <div class="editor-header glass-panel">
+      <div class="editor-header-content" [formGroup]="form">
+        <input 
+          type="text" 
+          class="title-input" 
+          placeholder="Escreva um título criativo..."
+          formControlName="titulo"
+        >
+        
+        <div class="meta-inputs">
+          <select class="category-select" formControlName="categoriaId">
+            <option value="" disabled>Selecione uma categoria</option>
+            @for (cat of categorias(); track cat.id) {
+              <option [value]="cat.id">{{ cat.nome }}</option>
+            }
+          </select>
+          
+          <input 
+            type="url" 
+            class="cover-input" 
+            placeholder="URL da Imagem de Capa (Opcional)"
+            formControlName="imagemUrl"
+          >
+        </div>
+      </div>
+      
+      <div class="editor-actions">
+        <!-- O loading IA fica visível apenas enquanto o Gemini gera -->
+        @if (carregandoIa()) {
+           <div class="badge-ia pulse">✨ IA Trabalhando...</div>
+        }
+        <button class="btn btn-primary" [disabled]="form.invalid || carregando()" (click)="salvar()">
+          {{ editandoId() ? 'Salvar Alterações' : 'Publicar Notícia' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-canvas">
+      @for (block of blocks(); track $index) {
+        <div class="block-wrapper" [class.focused]="currentBlockFocus() === $index">
+          <div class="block-drag-handle">⋮⋮</div>
+          <div 
+            class="editable-block"
+            contenteditable="true"
+            [attr.data-placeholder]="'Digite o texto ou / para ativar IA'"
+            (keydown)="onBlockKeydown($event, $index)"
+            (input)="onBlockInput($event, $index)"
+            (focus)="onBlockFocus($index)"
+            [innerText]="block.content"
+          ></div>
+        </div>
+      }
+    </div>
+
+    <!-- Dropdown flutuante de Slash Commands da IA -->
+    @if (showIaMenu().visible) {
+      <div 
+        class="ia-slash-menu glass-panel shadow-lg"
+        [style.top.px]="showIaMenu().top + 30"
+        [style.left.px]="showIaMenu().left"
+      >
+        <div class="ia-menu-header">✨ Opções A.I. Gemini</div>
+        <ul>
+           <li (click)="refinarComIA(showIaMenu().blockIndex, 'formal')">👔 Tornar mais Formal</li>
+           <li (click)="refinarComIA(showIaMenu().blockIndex, 'criativo')">🎨 Deixar mais Criativo</li>
+           <li (click)="refinarComIA(showIaMenu().blockIndex, 'resumido')">✂️ Resumir parágrafo</li>
+        </ul>
+      </div>
+    }
+  </div>
+}

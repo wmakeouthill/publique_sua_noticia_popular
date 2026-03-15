@@ -1,11 +1,13 @@
-FROM eclipse-temurin:21-jdk-alpine
+## syntax=docker/dockerfile:1.7-labs
+FROM maven:3.9.9-eclipse-temurin-21-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache maven curl
+RUN apk add --no-cache curl
 
 COPY pom.xml .
-RUN mvn dependency:go-offline -B -q
+RUN --mount=type=cache,target=/root/.m2 \
+     mvn dependency:go-offline -DskipTests -B -q
 
 COPY src ./src
 

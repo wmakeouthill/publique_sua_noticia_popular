@@ -26,3 +26,10 @@ export interface CriarNoticiaRequest {
   categoriaId: string;
   publicarImediatamente: boolean;
 }
+
+export interface EditarNoticiaRequest {
+  titulo?: string;
+  conteudo?: string;
+  resumo?: string;
+  imagemUrl?: string | null;
+}

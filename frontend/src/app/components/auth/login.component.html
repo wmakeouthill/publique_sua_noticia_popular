@@ -14,10 +14,7 @@
           Autenticando...
         </div>
       } @else {
-        <!-- Na vida real você coloca a div com classe g_id_signin e configura o Google OAuth via script -->
-        <button class="btn btn-primary google-mock-btn" (click)="mockLogin()">
-          <span class="g-icon">G</span> Continuar com Google (Mock)
-        </button>
+        <div #googleBtnRef class="google-button-wrapper"></div>
       }
     </div>
 

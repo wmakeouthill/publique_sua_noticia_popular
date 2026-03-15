@@ -17,11 +17,13 @@ O **Portal de Notícias Populares** é uma aplicação completa (Full-Stack) vol
 Todo o ecossistema (Frontend, Backend e Banco de Dados) está configurado para subir via Docker Compose de forma simplificada.
 
 ### 1. Pré-requisitos
+
 - Docker Desktop instalado e rodando.
 - PowerShell aberto na pasta raiz do projeto (`d:\publique_sua_noticia_popular`).
 
 ### 2. Configuração do Ambiente (.env)
-Antes de subir, garanta que o arquivo `.env` existe na raiz do projeto. 
+
+Antes de subir, garanta que o arquivo `.env` existe na raiz do projeto.
 Se você acabou de clonar/criar, copie o arquivo de exemplo executando no PowerShell:
 
 ```powershell
@@ -31,6 +33,7 @@ Copy-Item .env.example -Destination .env
 *(Opcional: edite o `.env` gerado com suas chaves reais da API do Gemini e Google OAuth caso queira testar estas integrações específicas).*
 
 ### 3. Subir os Contêineres
+
 Com o Docker Desktop rodando, abra o PowerShell na raiz do projeto (`d:\publique_sua_noticia_popular`) e execute:
 
 ```powershell
@@ -39,6 +42,7 @@ docker-compose up -d --build
 ```
 
 ### 4. Acompanhar os Logs (Opcional mas recomendado)
+
 Para garantir que o Spring Boot e o Angular iniciaram corretamente, você pode visualizar os logs:
 
 ```powershell
@@ -58,6 +62,7 @@ Depois que os serviços estiverem prontos, acesse no seu navegador:
 - **Health Check do Backend:** [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
 
 ### 6. Parar a Aplicação
+
 Quando terminar, você pode desligar tudo rodando o seguinte comando no PowerShell:
 
 ```powershell
@@ -67,6 +72,41 @@ docker-compose down
 # Caso queira desligar e DELETAR os dados do banco (Zerar o DB)
 docker-compose down -v
 ```
+
+---
+
+## 🐳 Docker Otimizado (Dev e Prod)
+
+O repositório agora está separado por propósito:
+
+- **Desenvolvimento local** (hot reload):
+  - `backend/Dockerfile.dev`
+  - `frontend/Dockerfile.dev`
+  - `docker-compose.yml`
+- **Produção** (imagens menores e startup mais previsível):
+  - `backend/Dockerfile` (multi-stage)
+  - `frontend/Dockerfile` (multi-stage + nginx)
+  - `docker-compose.prod.yml`
+  - `.dockerignore` em `backend/` e `frontend/`
+
+### Subir em modo produção (teste local)
+
+```powershell
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+### Parar produção
+
+```powershell
+docker compose -f docker-compose.prod.yml down
+```
+
+### Dicas para instância com 1GB RAM
+
+- O `docker-compose.prod.yml` já inclui `mem_limit` e `memswap_limit` por serviço.
+- Garanta swap no host (exemplo 1GB a 2GB) para evitar OOM kill em picos.
+- Em produção real, prefira não expor PostgreSQL publicamente (somente rede privada).
+- Se necessário, desative serviços auxiliares (ex.: pgAdmin) no ambiente de produção.
 
 ---
 

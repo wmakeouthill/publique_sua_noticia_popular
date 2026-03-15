@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CriarNoticiaRequest, Noticia, NoticiaResumo } from '../models/noticia.model';
+import { CriarNoticiaRequest, EditarNoticiaRequest, Noticia, NoticiaResumo } from '../models/noticia.model';
 import { Pagina } from '../models/paginacao.model';
 
 @Injectable({
@@ -27,7 +27,7 @@ export class NoticiaService {
     const params = new HttpParams()
       .set('pagina', pagina)
       .set('tamanho', tamanho);
-      
+
     return this.http.get<Pagina<NoticiaResumo>>(`${this.baseUrl}/minhas`, { params });
   }
 
@@ -37,6 +37,10 @@ export class NoticiaService {
 
   criar(request: CriarNoticiaRequest): Observable<Noticia> {
     return this.http.post<Noticia>(this.baseUrl, request);
+  }
+
+  atualizar(id: string, request: EditarNoticiaRequest): Observable<Noticia> {
+    return this.http.put<Noticia>(`${this.baseUrl}/${id}`, request);
   }
 
   excluir(id: string): Observable<void> {

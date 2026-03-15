@@ -2,6 +2,10 @@
   "name": "portal-noticias-ui",
   "version": "0.0.0",
   "scripts": {
+    "env:sync": "node scripts/generate-env.mjs",
+    "prestart": "npm run env:sync",
+    "prebuild": "npm run env:sync",
+    "prewatch": "npm run env:sync",
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build",

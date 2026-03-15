@@ -1,6 +1,6 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { AuthResponse, PerfilUsuario } from '../models/usuario.model';
 import { environment } from '../../environments/environment';
 import { firstValueFrom } from 'rxjs';
@@ -10,6 +10,8 @@ import { firstValueFrom } from 'rxjs';
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
   // Não injetando Router aqui para evitar conflitos, podemos emitir erro e deixar app resolver
 
   private readonly TOKEN_KEY = 'pop_auth_token';
@@ -21,7 +23,11 @@ export class AuthService {
   readonly carregando = signal<boolean>(true);
 
   constructor() {
-    this.iniciarSessao();
+    if (this.isBrowser) {
+      this.iniciarSessao();
+    } else {
+      this.carregando.set(false);
+    }
   }
 
   private async iniciarSessao(): Promise<void> {
@@ -48,10 +54,10 @@ export class AuthService {
     try {
       this.carregando.set(true);
       const res = await firstValueFrom(
-        this.http.post<AuthResponse>(`${environment.apiUrl}/auth/google`, { idToken: credential })
+        this.http.post<AuthResponse>(`${environment.apiUrl}/auth/google`, { googleToken: credential })
       );
 
-      this.salvarSessao(res.token, res.refreshToken);
+      this.salvarSessao(res.accessToken, res.refreshToken);
       await this.iniciarSessao();
       return true;
     } catch (e) {
@@ -65,17 +71,21 @@ export class AuthService {
   }
 
   obterToken(): string | null {
+    if (!this.isBrowser) return null;
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
   private salvarSessao(token: string, refreshToken: string): void {
+    if (!this.isBrowser) return;
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
   }
 
   private limparSessao(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    if (this.isBrowser) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    }
     this.usuarioAtual.set(null);
     this.autenticado.set(false);
   }

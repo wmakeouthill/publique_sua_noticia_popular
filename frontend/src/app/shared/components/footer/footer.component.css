@@ -1,7 +1,7 @@
 .footer {
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
-  padding: 3rem 0 1.5rem 0;
+  padding: 2rem 0;
   margin-top: auto;
 }
 
@@ -15,7 +15,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 2rem;
 }
@@ -32,6 +31,12 @@
   font-size: 0.9rem;
 }
 
+.brand .copyright {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 0.8rem;
+}
+
 .links {
   display: flex;
   gap: 1.5rem;
@@ -46,10 +51,3 @@
   color: var(--text-primary);
 }
 
-.copyright {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}

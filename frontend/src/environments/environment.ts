@@ -1,5 +1,7 @@
+import { runtimeEnv } from './environment.generated';
+
 export const environment = {
   production: true,
-  apiUrl: '/api/v1',
-  googleClientId: 'SEU_GOOGLE_CLIENT_ID'
+  apiUrl: runtimeEnv.apiUrl,
+  googleClientId: runtimeEnv.googleClientId
 };
