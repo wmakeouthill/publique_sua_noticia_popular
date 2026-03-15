@@ -49,6 +49,9 @@ app:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION:3600000}
     refresh-expiration-ms: 604800000
+  auth:
+    google:
+      admin-emails: ${ADMIN_GOOGLE_EMAILS:}
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
   gemini:

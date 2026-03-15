@@ -21,8 +21,8 @@ public class Usuario {
     private Instant atualizadoEm;
 
     private Usuario(String id, Email email, String nome, String avatarUrl,
-                    String provider, String providerId, PapelUsuario papel,
-                    boolean ativo, Instant criadoEm, Instant atualizadoEm) {
+            String provider, String providerId, PapelUsuario papel,
+            boolean ativo, Instant criadoEm, Instant atualizadoEm) {
         this.id = id;
         this.email = email;
         this.nome = nome;
@@ -36,7 +36,7 @@ public class Usuario {
     }
 
     public static Usuario criarComGoogle(String email, String nome,
-                                          String avatarUrl, String providerId) {
+            String avatarUrl, String providerId) {
         validarCamposObrigatorios(nome, providerId);
         return new Usuario(
                 UUID.randomUUID().toString(),
@@ -48,15 +48,14 @@ public class Usuario {
                 PapelUsuario.USUARIO,
                 true,
                 Instant.now(),
-                null
-        );
+                null);
     }
 
     public static Usuario reconstituir(String id, String email, String nome,
-                                        String avatarUrl, String provider,
-                                        String providerId, PapelUsuario papel,
-                                        boolean ativo, Instant criadoEm,
-                                        Instant atualizadoEm) {
+            String avatarUrl, String provider,
+            String providerId, PapelUsuario papel,
+            boolean ativo, Instant criadoEm,
+            Instant atualizadoEm) {
         return new Usuario(id, Email.of(email), nome, avatarUrl, provider,
                 providerId, papel, ativo, criadoEm, atualizadoEm);
     }
@@ -80,6 +79,11 @@ public class Usuario {
         this.atualizadoEm = Instant.now();
     }
 
+    public void rebaixarParaUsuario() {
+        this.papel = PapelUsuario.USUARIO;
+        this.atualizadoEm = Instant.now();
+    }
+
     public void atualizarPerfil(String novoNome, String novoAvatarUrl) {
         if (novoNome != null && !novoNome.isBlank()) {
             this.nome = novoNome.trim();
@@ -99,14 +103,43 @@ public class Usuario {
         }
     }
 
-    public String getId() { return id; }
-    public String getEmail() { return email.valor(); }
-    public String getNome() { return nome; }
-    public String getAvatarUrl() { return avatarUrl; }
-    public String getProvider() { return provider; }
-    public String getProviderId() { return providerId; }
-    public PapelUsuario getPapel() { return papel; }
-    public boolean isAtivo() { return ativo; }
-    public Instant getCriadoEm() { return criadoEm; }
-    public Instant getAtualizadoEm() { return atualizadoEm; }
+    public String getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email.valor();
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public PapelUsuario getPapel() {
+        return papel;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public Instant getCriadoEm() {
+        return criadoEm;
+    }
+
+    public Instant getAtualizadoEm() {
+        return atualizadoEm;
+    }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, inject, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -7,6 +7,10 @@ import { environment } from '../../../environments/environment';
 declare global {
   interface Window {
     google: any;
+    __npGsiState?: {
+      initialized: boolean;
+      clientId?: string;
+    };
   }
 }
 
@@ -42,11 +46,21 @@ export class LoginComponent implements AfterViewInit {
         return;
       }
 
-      window.google.accounts.id.initialize({
-        client_id: environment.googleClientId,
-        callback: this.handleCredentialResponse.bind(this)
-      });
+      const estadoGsi = window.__npGsiState ?? { initialized: false, clientId: undefined };
+      const precisaInicializar = !estadoGsi.initialized || estadoGsi.clientId !== environment.googleClientId;
 
+      if (precisaInicializar) {
+        window.google.accounts.id.initialize({
+          client_id: environment.googleClientId,
+          callback: this.handleCredentialResponse.bind(this)
+        });
+        window.__npGsiState = {
+          initialized: true,
+          clientId: environment.googleClientId
+        };
+      }
+
+      this.googleBtnRef.nativeElement.innerHTML = '';
       window.google.accounts.id.renderButton(
         this.googleBtnRef.nativeElement,
         { theme: 'outline', size: 'large', width: '300' }

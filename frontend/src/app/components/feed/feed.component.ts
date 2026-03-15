@@ -29,7 +29,7 @@ export class FeedComponent {
     effect(() => {
       this.apiCategorias.carregar();
       this.carregarNoticias();
-    }, { allowSignalWrites: true });
+    });
   }
 
   async carregarNoticias(novaBusca = true): Promise<void> {
@@ -43,10 +43,10 @@ export class FeedComponent {
       const page = await firstValueFrom(
         this.noticiaService.feed(this.pagina(), 12, this.categoriaAtiva() || undefined)
       );
-      
+
       this.noticias.update(lista => novaBusca ? page.content : [...lista, ...page.content]);
       this.ultimaPagina.set(page.last);
-    } catch(e) {
+    } catch (e) {
       console.error('Falha ao carregar noticias', e);
     } finally {
       this.carregandoNoticias.set(false);

@@ -10,22 +10,31 @@ import org.springframework.data.repository.query.Param;
 
 public interface NoticiaJpaRepository extends JpaRepository<NoticiaEntity, String> {
 
-    @Query("""
-            SELECT n FROM NoticiaEntity n
-            WHERE n.status = 'PUBLICADA'
-            AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
-            AND (:busca IS NULL OR LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%')))
-            ORDER BY n.publicadoEm DESC
-            """)
-    Page<NoticiaEntity> findPublicadas(
-            @Param("categoriaId") String categoriaId,
-            @Param("busca") String busca,
-            Pageable pageable
-    );
+        @Query("""
+                        SELECT n FROM NoticiaEntity n
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
+                        ORDER BY n.publicadoEm DESC
+                        """)
+        Page<NoticiaEntity> findPublicadasSemBusca(
+                        @Param("categoriaId") String categoriaId,
+                        Pageable pageable);
 
-    Page<NoticiaEntity> findByAutorIdOrderByCriadoEmDesc(String autorId, Pageable pageable);
+        @Query("""
+                        SELECT n FROM NoticiaEntity n
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
+                        AND LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%'))
+                        ORDER BY n.publicadoEm DESC
+                        """)
+        Page<NoticiaEntity> findPublicadasComBusca(
+                        @Param("categoriaId") String categoriaId,
+                        @Param("busca") String busca,
+                        Pageable pageable);
 
-    long countByStatus(StatusNoticia status);
+        Page<NoticiaEntity> findByAutorIdOrderByCriadoEmDesc(String autorId, Pageable pageable);
 
-    long countByCategoriaId(String categoriaId);
+        long countByStatus(StatusNoticia status);
+
+        long countByCategoriaId(String categoriaId);
 }

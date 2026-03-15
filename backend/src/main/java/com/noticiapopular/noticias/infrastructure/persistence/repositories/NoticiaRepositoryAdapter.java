@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -31,7 +32,12 @@ public class NoticiaRepositoryAdapter implements NoticiaRepositoryPort {
 
     @Override
     public Page<Noticia> listarPublicadas(String categoriaId, String busca, Pageable pageable) {
-        return jpaRepository.findPublicadas(categoriaId, busca, pageable)
+        if (!StringUtils.hasText(busca)) {
+            return jpaRepository.findPublicadasSemBusca(categoriaId, pageable)
+                    .map(noticiaMapper::toDomain);
+        }
+
+        return jpaRepository.findPublicadasComBusca(categoriaId, busca, pageable)
                 .map(noticiaMapper::toDomain);
     }
 
