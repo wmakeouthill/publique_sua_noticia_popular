@@ -1,0 +1,111 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: noticiapopular-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${PG_DATABASE:-noticiapopular}
+      POSTGRES_USER: ${PG_USER:-noticiapopular}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    command: >
+      postgres
+        -c shared_buffers=128MB
+        -c work_mem=4MB
+        -c effective_cache_size=256MB
+        -c maintenance_work_mem=64MB
+        -c max_connections=30
+    mem_limit: 384m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${PG_USER:-noticiapopular} -d ${PG_DATABASE:-noticiapopular}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: noticiapopular-backend
+    ports:
+      - "8080:8080"
+      - "5005:5005"
+    volumes:
+      - ./backend:/app
+      - maven-cache:/root/.m2
+      - /app/target
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PG_DATABASE:-noticiapopular}
+      SPRING_DATASOURCE_USERNAME: ${PG_USER:-noticiapopular}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      JAVA_OPTS: >-
+        -XX:+UseG1GC
+        -XX:MaxRAMPercentage=60.0
+        -XX:+UseStringDeduplication
+        -Xss256k
+        -XX:+UseCompressedOops
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    mem_limit: 512m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: noticiapopular-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    environment:
+      NG_APP_API_URL: ${NG_APP_API_URL:-http://localhost:8080/api}
+      NG_APP_GOOGLE_CLIENT_ID: ${NG_APP_GOOGLE_CLIENT_ID:-}
+    depends_on:
+      - backend
+    networks:
+      - noticiapopular-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: noticiapopular-pgadmin
+    profiles:
+      - tools
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@noticiapopular.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?Defina PGADMIN_DEFAULT_PASSWORD no .env para usar o profile tools}
+    networks:
+      - noticiapopular-network
+
+volumes:
+  postgres-data:
+  maven-cache:
+  frontend-node-modules:
+
+networks:
+  noticiapopular-network:
+    driver: bridge

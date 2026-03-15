@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315060200-criar-tabela-categorias
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: categorias
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: nome
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: slug
+                  type: varchar(120)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: descricao
+                  type: varchar(500)
+              - column:
+                  name: icone
+                  type: varchar(10)
+              - column:
+                  name: ativa
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ordem
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criado_em
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_categoria_slug
+            tableName: categorias
+            columns:
+              - column:
+                  name: slug
+        - createIndex:
+            indexName: idx_categoria_ativa
+            tableName: categorias
+            columns:
+              - column:
+                  name: ativa
+      rollback:
+        - dropTable:
+            tableName: categorias

@@ -1,0 +1,103 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315060300-criar-tabela-noticias
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: noticias
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: titulo
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: conteudo
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resumo
+                  type: varchar(500)
+              - column:
+                  name: imagem_url
+                  type: varchar(500)
+              - column:
+                  name: categoria_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_noticia_categoria
+                    references: categorias(id)
+              - column:
+                  name: autor_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_noticia_autor
+                    references: usuarios(id)
+              - column:
+                  name: status
+                  type: varchar(20)
+                  defaultValue: RASCUNHO
+                  constraints:
+                    nullable: false
+              - column:
+                  name: visualizacoes
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criado_em
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: atualizado_em
+                  type: timestamp
+              - column:
+                  name: publicado_em
+                  type: timestamp
+        - createIndex:
+            indexName: idx_noticia_categoria_id
+            tableName: noticias
+            columns:
+              - column:
+                  name: categoria_id
+        - createIndex:
+            indexName: idx_noticia_autor_id
+            tableName: noticias
+            columns:
+              - column:
+                  name: autor_id
+        - createIndex:
+            indexName: idx_noticia_status
+            tableName: noticias
+            columns:
+              - column:
+                  name: status
+        - createIndex:
+            indexName: idx_noticia_publicado_em
+            tableName: noticias
+            columns:
+              - column:
+                  name: publicado_em
+        - createIndex:
+            indexName: idx_noticia_status_publicado_em
+            tableName: noticias
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: publicado_em
+      rollback:
+        - dropTable:
+            tableName: noticias

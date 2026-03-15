@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315060000-criar-tabela-usuarios
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: usuarios
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: nome
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: avatar_url
+                  type: varchar(500)
+              - column:
+                  name: provider
+                  type: varchar(20)
+                  defaultValue: google
+                  constraints:
+                    nullable: false
+              - column:
+                  name: provider_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: papel
+                  type: varchar(20)
+                  defaultValue: USUARIO
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ativo
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criado_em
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: atualizado_em
+                  type: timestamp
+        - createIndex:
+            indexName: idx_usuario_email
+            tableName: usuarios
+            columns:
+              - column:
+                  name: email
+        - createIndex:
+            indexName: idx_usuario_provider_id
+            tableName: usuarios
+            columns:
+              - column:
+                  name: provider
+              - column:
+                  name: provider_id
+      rollback:
+        - dropTable:
+            tableName: usuarios

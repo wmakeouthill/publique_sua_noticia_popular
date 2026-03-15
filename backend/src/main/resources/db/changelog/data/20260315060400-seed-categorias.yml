@@ -1,0 +1,262 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315060400-seed-categorias
+      author: portal-noticias
+      changes:
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0001-0000-0000-000000000001' }
+              - column: { name: nome, value: 'Política' }
+              - column: { name: slug, value: 'politica' }
+              - column: { name: descricao, value: 'Notícias sobre política nacional e internacional' }
+              - column: { name: icone, value: '🏛️' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 1 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0002-0000-0000-000000000002' }
+              - column: { name: nome, value: 'Economia' }
+              - column: { name: slug, value: 'economia' }
+              - column: { name: descricao, value: 'Finanças, mercado e economia' }
+              - column: { name: icone, value: '💰' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 2 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0003-0000-0000-000000000003' }
+              - column: { name: nome, value: 'Tecnologia' }
+              - column: { name: slug, value: 'tecnologia' }
+              - column: { name: descricao, value: 'Inovação, gadgets e tendências tech' }
+              - column: { name: icone, value: '💻' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 3 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0004-0000-0000-000000000004' }
+              - column: { name: nome, value: 'Ciência' }
+              - column: { name: slug, value: 'ciencia' }
+              - column: { name: descricao, value: 'Descobertas científicas e pesquisas' }
+              - column: { name: icone, value: '🔬' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 4 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0005-0000-0000-000000000005' }
+              - column: { name: nome, value: 'Saúde' }
+              - column: { name: slug, value: 'saude' }
+              - column: { name: descricao, value: 'Saúde, bem-estar e medicina' }
+              - column: { name: icone, value: '🏥' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 5 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0006-0000-0000-000000000006' }
+              - column: { name: nome, value: 'Educação' }
+              - column: { name: slug, value: 'educacao' }
+              - column: { name: descricao, value: 'Ensino, universidades e aprendizado' }
+              - column: { name: icone, value: '📚' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 6 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0007-0000-0000-000000000007' }
+              - column: { name: nome, value: 'Esportes' }
+              - column: { name: slug, value: 'esportes' }
+              - column: { name: descricao, value: 'Futebol, olimpíadas e competições esportivas' }
+              - column: { name: icone, value: '⚽' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 7 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0008-0000-0000-000000000008' }
+              - column: { name: nome, value: 'Entretenimento' }
+              - column: { name: slug, value: 'entretenimento' }
+              - column: { name: descricao, value: 'Cinema, séries, música e celebridades' }
+              - column: { name: icone, value: '🎬' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 8 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0009-0000-0000-000000000009' }
+              - column: { name: nome, value: 'Cultura' }
+              - column: { name: slug, value: 'cultura' }
+              - column: { name: descricao, value: 'Arte, literatura e patrimônio cultural' }
+              - column: { name: icone, value: '🎭' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 9 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0010-0000-0000-000000000010' }
+              - column: { name: nome, value: 'Meio Ambiente' }
+              - column: { name: slug, value: 'meio-ambiente' }
+              - column: { name: descricao, value: 'Ecologia, clima e sustentabilidade' }
+              - column: { name: icone, value: '🌿' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 10 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0011-0000-0000-000000000011' }
+              - column: { name: nome, value: 'Internacional' }
+              - column: { name: slug, value: 'internacional' }
+              - column: { name: descricao, value: 'Notícias do mundo e relações internacionais' }
+              - column: { name: icone, value: '🌍' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 11 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0012-0000-0000-000000000012' }
+              - column: { name: nome, value: 'Brasil' }
+              - column: { name: slug, value: 'brasil' }
+              - column: { name: descricao, value: 'Notícias nacionais e regionais do Brasil' }
+              - column: { name: icone, value: '🇧🇷' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 12 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0013-0000-0000-000000000013' }
+              - column: { name: nome, value: 'Segurança' }
+              - column: { name: slug, value: 'seguranca' }
+              - column: { name: descricao, value: 'Segurança pública e defesa' }
+              - column: { name: icone, value: '🔒' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 13 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0014-0000-0000-000000000014' }
+              - column: { name: nome, value: 'Opinião' }
+              - column: { name: slug, value: 'opiniao' }
+              - column: { name: descricao, value: 'Artigos de opinião e análises' }
+              - column: { name: icone, value: '💬' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 14 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0015-0000-0000-000000000015' }
+              - column: { name: nome, value: 'Curiosidades' }
+              - column: { name: slug, value: 'curiosidades' }
+              - column: { name: descricao, value: 'Fatos curiosos e inusitados do cotidiano' }
+              - column: { name: icone, value: '🤔' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 15 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0016-0000-0000-000000000016' }
+              - column: { name: nome, value: 'Games' }
+              - column: { name: slug, value: 'games' }
+              - column: { name: descricao, value: 'Videogames, e-sports e cultura gamer' }
+              - column: { name: icone, value: '🎮' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 16 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0017-0000-0000-000000000017' }
+              - column: { name: nome, value: 'Lifestyle' }
+              - column: { name: slug, value: 'lifestyle' }
+              - column: { name: descricao, value: 'Estilo de vida, bem-estar e tendências' }
+              - column: { name: icone, value: '✨' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 17 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0018-0000-0000-000000000018' }
+              - column: { name: nome, value: 'Moda' }
+              - column: { name: slug, value: 'moda' }
+              - column: { name: descricao, value: 'Tendências de moda e beleza' }
+              - column: { name: icone, value: '👗' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 18 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0019-0000-0000-000000000019' }
+              - column: { name: nome, value: 'Gastronomia' }
+              - column: { name: slug, value: 'gastronomia' }
+              - column: { name: descricao, value: 'Culinária, restaurantes e gastronomia' }
+              - column: { name: icone, value: '🍽️' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 19 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0020-0000-0000-000000000020' }
+              - column: { name: nome, value: 'Viagens' }
+              - column: { name: slug, value: 'viagens' }
+              - column: { name: descricao, value: 'Destinos, dicas de viagem e turismo' }
+              - column: { name: icone, value: '✈️' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 20 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0021-0000-0000-000000000021' }
+              - column: { name: nome, value: 'Automóveis' }
+              - column: { name: slug, value: 'automoveis' }
+              - column: { name: descricao, value: 'Carros, motos e mobilidade urbana' }
+              - column: { name: icone, value: '🚗' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 21 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0022-0000-0000-000000000022' }
+              - column: { name: nome, value: 'Imóveis' }
+              - column: { name: slug, value: 'imoveis' }
+              - column: { name: descricao, value: 'Mercado imobiliário e habitação' }
+              - column: { name: icone, value: '🏠' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 22 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+        - insert:
+            tableName: categorias
+            columns:
+              - column: { name: id, value: 'a1b2c3d4-0023-0000-0000-000000000023' }
+              - column: { name: nome, value: 'Emprego' }
+              - column: { name: slug, value: 'emprego' }
+              - column: { name: descricao, value: 'Mercado de trabalho, carreiras e oportunidades' }
+              - column: { name: icone, value: '💼' }
+              - column: { name: ativa, valueBoolean: true }
+              - column: { name: ordem, valueNumeric: 23 }
+              - column: { name: criado_em, valueComputed: CURRENT_TIMESTAMP }
+      rollback:
+        - delete:
+            tableName: categorias
+            where: "id LIKE 'a1b2c3d4-%'"

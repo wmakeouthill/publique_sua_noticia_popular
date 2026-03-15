@@ -1,0 +1,28 @@
+export type StatusNoticia = 'RASCUNHO' | 'PUBLICADA' | 'ARQUIVADA';
+
+export interface NoticiaResumo {
+  id: string;
+  titulo: string;
+  resumo: string;
+  imagemUrl: string;
+  categoriaId: string;
+  autorId: string;
+  status: StatusNoticia;
+  visualizacoes: number;
+  criadoEm: string;
+  publicadoEm: string;
+}
+
+export interface Noticia extends NoticiaResumo {
+  conteudo: string; // JSON text para o editor
+  atualizadoEm: string;
+}
+
+export interface CriarNoticiaRequest {
+  titulo: string;
+  conteudo: string;
+  resumo: string;
+  imagemUrl?: string;
+  categoriaId: string;
+  publicarImediatamente: boolean;
+}

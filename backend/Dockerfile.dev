@@ -1,0 +1,15 @@
+FROM eclipse-temurin:21-jdk-alpine
+
+WORKDIR /app
+
+RUN apk add --no-cache maven curl
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B -q
+
+COPY src ./src
+
+EXPOSE 8080 5005
+
+CMD ["mvn", "spring-boot:run", \
+     "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -XX:+UseG1GC -XX:MaxRAMPercentage=60.0 -XX:+UseStringDeduplication -Xss256k"]

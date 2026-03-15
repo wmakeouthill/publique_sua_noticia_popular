@@ -1,0 +1,54 @@
+<div class="feed-header">
+  <div class="header-content animate-fade-in">
+    <h1>Explore o que é notícia</h1>
+    <p>Acompanhe as principais novidades em tempo real, escolhidas a dedo ou geradas com IA.</p>
+  </div>
+</div>
+
+<div class="categories-filter glass-panel animate-fade-in">
+  <button 
+    class="filter-btn" 
+    [class.active]="categoriaAtiva() === null"
+    (click)="onFiltrarCategoria(null)">
+    🌟 Destaques
+  </button>
+  
+  @for (cat of categorias(); track cat.id) {
+    <button 
+      class="filter-btn" 
+      [class.active]="categoriaAtiva() === cat.id"
+      (click)="onFiltrarCategoria(cat.id)">
+      {{ cat.icone }} {{ cat.nome }}
+    </button>
+  }
+</div>
+
+<div class="feed-grid">
+  @for (noticia of noticias(); track noticia.id) {
+    <div class="animate-fade-in">
+      <app-noticia-card 
+        [noticia]="noticia" 
+        (onCategoriaClick)="onFiltrarCategoria($event)" />
+    </div>
+  } @empty {
+    @if (!carregandoNoticias()) {
+      <div class="empty-state glass-panel animate-fade-in">
+        <div class="icon">📭</div>
+        <h3>Nenhuma notícia encontrada</h3>
+        <p>Não encontramos notícias publicadas com estes critérios no momento.</p>
+        <button class="btn btn-primary" (click)="onFiltrarCategoria(null)">Limpar Filtros</button>
+      </div>
+    }
+  }
+</div>
+
+@if (carregandoNoticias()) {
+  <div class="loading-state">
+    <div class="spinner">↻</div>
+    <p>Buscando novidades...</p>
+  </div>
+} @else if (!ultimaPagina() && noticias().length > 0) {
+  <div class="load-more-container animate-fade-in">
+    <button class="btn btn-secondary" (click)="carregarMais()">Ver mais notícias</button>
+  </div>
+}

@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260315060100-criar-tabela-refresh-tokens
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: refresh_tokens
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: token
+                  type: varchar(500)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: usuario_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_refresh_token_usuario
+                    references: usuarios(id)
+              - column:
+                  name: expira_em
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: revogado
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_refresh_token_usuario_id
+            tableName: refresh_tokens
+            columns:
+              - column:
+                  name: usuario_id
+      rollback:
+        - dropTable:
+            tableName: refresh_tokens

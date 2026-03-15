@@ -1,0 +1,29 @@
+<header class="navbar glass-panel">
+  <div class="container">
+    <a routerLink="/" class="logo">
+      <span class="icon">📰</span>
+      <span class="text">Notícia Popular</span>
+    </a>
+
+    <nav class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+      <a routerLink="/explorar" routerLinkActive="active">Explorar</a>
+      
+      @if (auth.autenticado()) {
+        <a routerLink="/minhas-noticias" routerLinkActive="active">Minhas Publicações</a>
+      }
+    </nav>
+
+    <div class="actions">
+      @if (auth.autenticado()) {
+        <div class="user-menu">
+          <span class="greeting">Olá, {{ auth.usuarioAtual()?.nome?.split(' ')?.[0] }}</span>
+          <a routerLink="/nova-noticia" class="btn btn-primary">Nova Notícia</a>
+          <button (click)="logout()" class="btn btn-secondary btn-sm">Sair</button>
+        </div>
+      } @else {
+        <a routerLink="/login" class="btn btn-primary">Entrar com Google</a>
+      }
+    </div>
+  </div>
+</header>

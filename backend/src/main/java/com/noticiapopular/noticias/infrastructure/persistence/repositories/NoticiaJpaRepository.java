@@ -1,0 +1,31 @@
+package com.noticiapopular.noticias.infrastructure.persistence.repositories;
+
+import com.noticiapopular.noticias.domain.valueobjects.StatusNoticia;
+import com.noticiapopular.noticias.infrastructure.persistence.entities.NoticiaEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface NoticiaJpaRepository extends JpaRepository<NoticiaEntity, String> {
+
+    @Query("""
+            SELECT n FROM NoticiaEntity n
+            WHERE n.status = 'PUBLICADA'
+            AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
+            AND (:busca IS NULL OR LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%')))
+            ORDER BY n.publicadoEm DESC
+            """)
+    Page<NoticiaEntity> findPublicadas(
+            @Param("categoriaId") String categoriaId,
+            @Param("busca") String busca,
+            Pageable pageable
+    );
+
+    Page<NoticiaEntity> findByAutorIdOrderByCriadoEmDesc(String autorId, Pageable pageable);
+
+    long countByStatus(StatusNoticia status);
+
+    long countByCategoriaId(String categoriaId);
+}
