@@ -13,6 +13,11 @@ export interface MelhorarTituloRequest {
   conteudoResumo?: string;
 }
 
+export interface MelhorarSubmancheteRequest {
+  submancheteAtual?: string;
+  conteudo: string;
+}
+
 export interface RespostaIA {
   titulo: string;
   resumo: string;

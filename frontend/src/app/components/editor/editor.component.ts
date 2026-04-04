@@ -64,9 +64,10 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly MENU_MAX_HEIGHT = 380;
 
   form = this.fb.group({
-    titulo:      ['', [Validators.required, Validators.minLength(5)]],
-    categoriaId: ['', Validators.required],
-    imagemUrl:   ['']
+    titulo:       ['', [Validators.required, Validators.minLength(5)]],
+    submanchete:  [''],
+    categoriaId:  ['', Validators.required],
+    imagemUrl:    ['']
   });
 
   blocks = signal<Block[]>([{ type: 'paragraph', content: '' }]);
@@ -96,6 +97,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       const noticia = await firstValueFrom(this.noticiaService.buscarPorId(id));
       this.form.patchValue({
         titulo:      noticia.titulo,
+        submanchete: noticia.resumo ?? '',
         categoriaId: noticia.categoriaId,
         imagemUrl:   noticia.imagemUrl
       });
@@ -191,6 +193,43 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       }
     } catch {
       this.notification.error('A IA não conseguiu melhorar a manchete. Tente novamente.');
+    } finally {
+      this.carregandoIa.set(false);
+    }
+  }
+
+  // ─── IA — submanchete ───────────────────────────────────────────────────────
+
+  async melhorarSubmanchete(): Promise<void> {
+    const conteudoTotal = this.blocks()
+      .map(b => b.content)
+      .filter(c => c.trim())
+      .join(' ');
+
+    if (conteudoTotal.length < 150) {
+      this.notification.warning('Escreva pelo menos 150 caracteres no conteúdo antes de gerar a submanchete.');
+      return;
+    }
+
+    const confirmado = window.confirm(
+      'Você já terminou de escrever a notícia?\n\n' +
+      'A IA vai criar ou melhorar a submanchete usando apenas o que você escreveu, sem inventar fatos.'
+    );
+    if (!confirmado) return;
+
+    const submancheteAtual = this.form.value.submanchete?.trim() || undefined;
+
+    this.carregandoIa.set(true);
+    try {
+      const res = await firstValueFrom(
+        this.iaService.melhorarSubmanchete({ submancheteAtual, conteudo: conteudoTotal.substring(0, 500) })
+      );
+      if (res.conteudo) {
+        this.form.patchValue({ submanchete: res.conteudo });
+        this.notification.success('Submanchete gerada pela IA!');
+      }
+    } catch {
+      this.notification.error('A IA não conseguiu gerar a submanchete. Tente novamente.');
     } finally {
       this.carregandoIa.set(false);
     }
@@ -315,8 +354,8 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   // ─── Editor — manipulação de blocos ─────────────────────────────────────────
 
   onBlockKeydown(event: KeyboardEvent, index: number): void {
-    // Abre o menu
-    if (event.key === '/') {
+    // Abre o menu apenas quando o bloco está vazio
+    if (event.key === '/' && this.blocks()[index].content === '') {
       event.preventDefault();
       const target = event.target as HTMLElement;
       this.slashMenuIndex.set(0);
@@ -528,7 +567,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
     }
 
     this.carregando.set(true);
-    const { titulo, categoriaId, imagemUrl } = this.form.value;
+    const { titulo, submanchete, categoriaId, imagemUrl } = this.form.value;
 
     const jsonConteudo = {
       blocks: this.blocks().map(b => ({
@@ -537,7 +576,9 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       }))
     };
 
-    const resumo = this.blocks().find(b => b.content.trim())?.content.substring(0, 150) ?? '';
+    const resumo = submanchete?.trim()
+      || this.blocks().find(b => b.content.trim())?.content.substring(0, 150)
+      || '';
 
     try {
       if (this.editandoId()) {

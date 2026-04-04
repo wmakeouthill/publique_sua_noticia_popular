@@ -64,6 +64,23 @@
             >✨</button>
           </div>
 
+          <!-- Submanchete -->
+          <div class="submanchete-row">
+            <input
+              type="text"
+              class="submanchete-input"
+              placeholder="Escreva a submanchete..."
+              formControlName="submanchete"
+            />
+            <button
+              type="button"
+              class="btn-ia-inline"
+              title="Gerar / melhorar submanchete com IA"
+              [disabled]="carregandoIa()"
+              (click)="melhorarSubmanchete()"
+            >✨</button>
+          </div>
+
           <hr class="article-divider" />
 
           <!-- Blocos de conteúdo -->
@@ -113,6 +130,9 @@
         </button>
         <button class="ia-action-btn" [disabled]="carregandoIa()" (click)="melhorarTitulo()">
           ✨ Melhorar manchete
+        </button>
+        <button class="ia-action-btn" [disabled]="carregandoIa()" (click)="melhorarSubmanchete()">
+          ✨ Gerar submanchete
         </button>
       </div>
 
