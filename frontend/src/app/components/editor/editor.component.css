@@ -407,7 +407,6 @@ kbd {
   border-radius: var(--radius-md);
   overflow: hidden;
   width: 290px;
-  max-height: 380px;
   overflow-y: auto;
   animation: slide-up 0.12s ease-out;
   box-shadow: 0 12px 40px rgba(0,0,0,0.45);
@@ -415,6 +414,9 @@ kbd {
 }
 
 .slash-section-label {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   padding: 0.5rem 1rem 0.35rem;
   font-size: 0.7rem;
   font-weight: 700;

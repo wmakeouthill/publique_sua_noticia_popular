@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +22,7 @@ interface Block {
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css'
 })
-export class EditorComponent implements OnInit {
+export class EditorComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -42,8 +42,8 @@ export class EditorComponent implements OnInit {
   readonly currentBlockFocus = signal(0);
   readonly imagemPreview = signal<string | null>(null);
 
-  readonly showIaMenu = signal<{ visible: boolean; blockIndex: number; top: number; left: number }>({
-    visible: false, blockIndex: 0, top: 0, left: 0
+  readonly showIaMenu = signal<{ visible: boolean; blockIndex: number; top: number; left: number; maxHeight: number }>({
+    visible: false, blockIndex: 0, top: 0, left: 0, maxHeight: 380
   });
   readonly slashMenuIndex = signal(0);
 
@@ -51,6 +51,13 @@ export class EditorComponent implements OnInit {
   private readonly SLASH_FORMAT_TYPES: Block['type'][] = ['h1', 'h2', 'h3', 'quote', 'list', 'paragraph'];
   private readonly SLASH_IA_ESTILOS: Array<'formal' | 'criativo' | 'resumido'> = ['formal', 'criativo', 'resumido'];
   private get SLASH_TOTAL() { return this.SLASH_FORMAT_TYPES.length + this.SLASH_IA_ESTILOS.length; }
+
+  // Scroll tracking para o slash menu
+  private slashAnchorEl: HTMLElement | null = null;
+  private slashScrollHandler: (() => void) | null = null;
+  private rafId: number | null = null;
+  private readonly MENU_WIDTH = 290;
+  private readonly MENU_MAX_HEIGHT = 380;
 
   form = this.fb.group({
     titulo:      ['', [Validators.required, Validators.minLength(5)]],
@@ -284,9 +291,11 @@ export class EditorComponent implements OnInit {
     if (event.key === '/') {
       event.preventDefault();
       const target = event.target as HTMLElement;
-      const rect = target.getBoundingClientRect();
       this.slashMenuIndex.set(0);
-      this.showIaMenu.set({ visible: true, blockIndex: index, top: rect.bottom + 6, left: rect.left });
+      this.slashAnchorEl = target;
+      const pos = this.calcularPosicaoMenu(target);
+      this.showIaMenu.set({ visible: true, blockIndex: index, ...pos });
+      this.registrarScrollListener();
       return;
     }
 
@@ -365,8 +374,72 @@ export class EditorComponent implements OnInit {
 
   fecharIaMenu(): void {
     if (this.showIaMenu().visible) {
-      this.showIaMenu.set({ visible: false, blockIndex: 0, top: 0, left: 0 });
+      this.showIaMenu.set({ visible: false, blockIndex: 0, top: 0, left: 0, maxHeight: 380 });
       this.slashMenuIndex.set(0);
+      this.removerScrollListener();
+      this.slashAnchorEl = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.removerScrollListener();
+    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+  }
+
+  // ─── Posicionamento inteligente do slash menu ────────────────────────────────
+
+  private calcularPosicaoMenu(el: HTMLElement): { top: number; left: number; maxHeight: number } {
+    const rect = el.getBoundingClientRect();
+    const GAP = 6;
+    const MARGIN = 8;
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+
+    const spaceBelow = vh - rect.bottom - GAP - MARGIN;
+    const spaceAbove = rect.top - GAP - MARGIN;
+    const openDown = spaceBelow >= 180 || spaceBelow >= spaceAbove;
+
+    let top: number;
+    let maxHeight: number;
+
+    if (openDown) {
+      top = rect.bottom + GAP;
+      maxHeight = Math.min(this.MENU_MAX_HEIGHT, Math.max(150, spaceBelow));
+    } else {
+      maxHeight = Math.min(this.MENU_MAX_HEIGHT, Math.max(150, spaceAbove));
+      top = rect.top - maxHeight - GAP;
+    }
+
+    // Clamp horizontal
+    let left = rect.left;
+    if (left + this.MENU_WIDTH > vw - MARGIN) {
+      left = vw - this.MENU_WIDTH - MARGIN;
+    }
+    left = Math.max(MARGIN, left);
+
+    return { top, left, maxHeight };
+  }
+
+  private registrarScrollListener(): void {
+    this.removerScrollListener();
+    this.slashScrollHandler = () => {
+      if (this.rafId !== null) return;
+      this.rafId = requestAnimationFrame(() => {
+        this.rafId = null;
+        if (this.slashAnchorEl && this.showIaMenu().visible) {
+          const pos = this.calcularPosicaoMenu(this.slashAnchorEl);
+          this.showIaMenu.update(m => ({ ...m, ...pos }));
+        }
+      });
+    };
+    // capture: true apanha scroll de qualquer container, não só window
+    window.addEventListener('scroll', this.slashScrollHandler, { passive: true, capture: true });
+  }
+
+  private removerScrollListener(): void {
+    if (this.slashScrollHandler) {
+      window.removeEventListener('scroll', this.slashScrollHandler, { capture: true } as EventListenerOptions);
+      this.slashScrollHandler = null;
     }
   }
 
