@@ -4,7 +4,7 @@
     <h3>Carregando Editor...</h3>
   </div>
 } @else {
-  <div class="editor-layout animate-fade-in" (click)="fecharIaMenu()">
+  <div class="editor-layout animate-fade-in" (click)="fecharIaMenu(); activeImageBlock.set(-1)">
 
     <!-- ════════════ CARD ARTIGO (preview) ════════════ -->
     <div class="editor-main">
@@ -95,14 +95,20 @@
                         <span class="spinner">↻</span> Enviando imagem...
                       </div>
                     } @else if (block.content) {
-                      <div class="img-layout-root" [class]="'img-layout-' + (block.layout ?? 'full')">
-                        <div class="img-toolbar">
-                          <button type="button" [class.active]="block.layout === 'left'" (click)="setImageLayout($index, 'left')" title="À esquerda">◧</button>
-                          <button type="button" [class.active]="!block.layout || block.layout === 'full'" (click)="setImageLayout($index, 'full')" title="Largura total">▣</button>
-                          <button type="button" [class.active]="block.layout === 'right'" (click)="setImageLayout($index, 'right')" title="À direita">◨</button>
-                          <span class="img-toolbar-sep"></span>
-                          <button type="button" class="btn-img-remove" (click)="removerBlocoImagem($index)" title="Remover">✕</button>
-                        </div>
+                      <div
+                        class="img-layout-root"
+                        [class]="'img-layout-' + (block.layout ?? 'full')"
+                        (click)="activeImageBlock.set($index); $event.stopPropagation()"
+                      >
+                        @if (activeImageBlock() === $index) {
+                          <div class="img-toolbar">
+                            <button type="button" [class.active]="block.layout === 'left'" (click)="setImageLayout($index, 'left'); $event.stopPropagation()" title="À esquerda">◧</button>
+                            <button type="button" [class.active]="!block.layout || block.layout === 'full'" (click)="setImageLayout($index, 'full'); $event.stopPropagation()" title="Largura total">▣</button>
+                            <button type="button" [class.active]="block.layout === 'right'" (click)="setImageLayout($index, 'right'); $event.stopPropagation()" title="À direita">◨</button>
+                            <span class="img-toolbar-sep"></span>
+                            <button type="button" class="btn-img-remove" (click)="removerBlocoImagem($index)" title="Remover">✕</button>
+                          </div>
+                        }
                         <div class="img-resizable" [style.width.%]="block.layout === 'full' ? 100 : (block.width ?? 40)">
                           <img [src]="block.content" class="block-image" alt="Imagem" />
                           @if (block.layout !== 'full') {

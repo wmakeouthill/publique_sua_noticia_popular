@@ -350,11 +350,12 @@
   background-size: 4px 4px;
 }
 
-.img-resizable:hover .img-resize-handle { opacity: 1; }
+.img-resizable:hover .img-resize-handle,
+.img-layout-root .img-resize-handle { opacity: 1; }
 
 /* Toolbar de layout */
 .img-toolbar {
-  display: none;
+  display: flex;
   position: absolute;
   top: -2.4rem;
   left: 0;
@@ -366,9 +367,8 @@
   gap: 0.15rem;
   align-items: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: slide-up 0.1s ease-out;
 }
-
-.img-layout-root:hover .img-toolbar { display: flex; }
 
 .img-toolbar button {
   background: none;

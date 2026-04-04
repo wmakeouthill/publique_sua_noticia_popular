@@ -50,6 +50,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   readonly categorias = signal<Categoria[]>([]);
   readonly currentBlockFocus = signal(0);
   readonly imagemPreview = signal<string | null>(null);
+  readonly activeImageBlock = signal(-1);
 
   readonly showIaMenu = signal<{ visible: boolean; blockIndex: number; top: number; left: number; maxHeight: number }>({
     visible: false, blockIndex: 0, top: 0, left: 0, maxHeight: 380
@@ -240,23 +241,37 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   startResize(event: PointerEvent, index: number): void {
     event.preventDefault();
+    event.stopPropagation();
+
+    const handle = event.target as HTMLElement;
+    const wrap = handle.closest('.img-resizable') as HTMLElement;
+    if (!wrap) return;
+
+    // Captura o pointer para não perder eventos ao sair do elemento
+    handle.setPointerCapture(event.pointerId);
+
     this.resizingBlock = index;
     this.resizeStartX = event.clientX;
     this.resizeStartWidth = this.blocks()[index].width ?? 100;
-    const wrap = (event.target as HTMLElement).closest('.img-resizable') as HTMLElement;
-    this.resizeContainerWidth = wrap?.parentElement?.offsetWidth ?? 600;
+    this.resizeContainerWidth = wrap.parentElement?.offsetWidth ?? 600;
 
     this.onResizeMove = (e: PointerEvent) => {
       const delta = e.clientX - this.resizeStartX;
-      const pct = (delta / this.resizeContainerWidth) * 100;
-      const newW = Math.max(20, Math.min(100, this.resizeStartWidth + pct));
-      const updated = [...this.blocks()];
-      updated[this.resizingBlock] = { ...updated[this.resizingBlock], width: Math.round(newW) };
-      this.blocks.set(updated);
+      const pct   = (delta / this.resizeContainerWidth) * 100;
+      const newW  = Math.max(20, Math.min(100, this.resizeStartWidth + pct));
+      // Manipula DOM diretamente — sem triggerar CD do Angular durante o drag
+      wrap.style.width = newW.toFixed(1) + '%';
     };
 
     this.onResizeUp = () => {
+      // Só agora commita o valor final ao signal (uma única re-renderização)
+      const finalW = Math.round(parseFloat(wrap.style.width) || this.resizeStartWidth);
+      const updated = [...this.blocks()];
+      updated[this.resizingBlock] = { ...updated[this.resizingBlock], width: finalW };
+      this.blocks.set(updated);
+      // Limpa
       this.resizingBlock = -1;
+      handle.releasePointerCapture(event.pointerId);
       document.removeEventListener('pointermove', this.onResizeMove!);
       document.removeEventListener('pointerup', this.onResizeUp!);
       this.onResizeMove = null;
