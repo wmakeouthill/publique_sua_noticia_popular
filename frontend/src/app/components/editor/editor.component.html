@@ -52,13 +52,13 @@
             <input
               type="text"
               class="title-input"
-              placeholder="Escreva um título..."
+              placeholder="Escreva a manchete..."
               formControlName="titulo"
             />
             <button
               type="button"
               class="btn-ia-inline"
-              title="Melhorar título com IA"
+              title="Melhorar manchete com IA"
               [disabled]="carregandoIa()"
               (click)="melhorarTitulo()"
             >✨</button>
@@ -112,7 +112,7 @@
           📰 Reescrever como notícia
         </button>
         <button class="ia-action-btn" [disabled]="carregandoIa()" (click)="melhorarTitulo()">
-          ✨ Melhorar título
+          ✨ Melhorar manchete
         </button>
       </div>
 

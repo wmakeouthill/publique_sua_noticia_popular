@@ -158,7 +158,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   async melhorarTitulo(): Promise<void> {
     const tituloAtual = this.form.value.titulo?.trim();
     if (!tituloAtual) {
-      this.notification.warning('Escreva um título antes de pedir para a IA melhorar.');
+      this.notification.warning('Escreva uma manchete antes de pedir para a IA melhorar.');
       return;
     }
 
@@ -175,10 +175,10 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       );
       if (res.titulo) {
         this.form.patchValue({ titulo: res.titulo });
-        this.notification.success('Título melhorado pela IA!');
+        this.notification.success('Manchete melhorada pela IA!');
       }
     } catch {
-      this.notification.error('A IA não conseguiu melhorar o título. Tente novamente.');
+      this.notification.error('A IA não conseguiu melhorar a manchete. Tente novamente.');
     } finally {
       this.carregandoIa.set(false);
     }
