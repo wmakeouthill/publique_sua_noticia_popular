@@ -6,9 +6,8 @@
     <h2>Bem-vindo ao Portal</h2>
     <p>Acesse sua conta para publicar notícias e criar seu feed personalizado.</p>
 
-    <!-- Usamos Mock login se não tiver o enviroment configurado de verdade durante dev -->
     <div class="auth-buttons">
-      @if (carregando()) {
+      @if (autenticando) {
         <div class="loading">
           <div class="spinner">↻</div>
           Autenticando...
@@ -20,8 +19,12 @@
 
     @if (hasError) {
       <div class="error-box">
-        Houve um erro ao tentar autenticar. Tente novamente mais tarde.
+        {{ erroMensagem || 'Houve um erro ao tentar autenticar. Tente novamente.' }}
       </div>
     }
+
+    <p class="hint">
+      Ao entrar, você concorda com os termos do portal.
+    </p>
   </div>
 </div>

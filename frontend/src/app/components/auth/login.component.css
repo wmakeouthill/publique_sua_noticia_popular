@@ -72,8 +72,20 @@ p {
   margin-top: 1.5rem;
   padding: 1rem;
   background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--status-error);
-  color: var(--status-error);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
   border-radius: var(--radius-md);
   font-size: 0.9rem;
+}
+
+.hint {
+  margin-top: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+.google-button-wrapper {
+  display: flex;
+  justify-content: center;
 }

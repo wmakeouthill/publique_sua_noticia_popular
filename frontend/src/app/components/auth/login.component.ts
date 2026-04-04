@@ -30,7 +30,9 @@ export class LoginComponent implements AfterViewInit {
   @ViewChild('googleBtnRef') googleBtnRef!: ElementRef;
 
   readonly carregando = this.auth.carregando;
+  autenticando = false;
   hasError = false;
+  erroMensagem = '';
 
   ngAfterViewInit() {
     if (this.isBrowser) {
@@ -72,11 +74,21 @@ export class LoginComponent implements AfterViewInit {
 
   async handleCredentialResponse(response: any) {
     this.hasError = false;
-    const sucesso = await this.auth.loginComGoogle(response.credential);
-    if (sucesso) {
-      this.router.navigate(['/']);
-    } else {
+    this.erroMensagem = '';
+    this.autenticando = true;
+    try {
+      const sucesso = await this.auth.loginComGoogle(response.credential);
+      if (sucesso) {
+        this.router.navigate(['/']);
+      } else {
+        this.hasError = true;
+        this.erroMensagem = 'Falha ao autenticar. O servidor pode estar indisponível.';
+      }
+    } catch {
       this.hasError = true;
+      this.erroMensagem = 'Erro inesperado. Tente novamente.';
+    } finally {
+      this.autenticando = false;
     }
   }
 }

@@ -76,6 +76,19 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    public String obterPapelDoToken(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(obterChave())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("papel", String.class);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     public boolean ehRefreshToken(String token) {
         try {
             String tipo = Jwts.parser()
