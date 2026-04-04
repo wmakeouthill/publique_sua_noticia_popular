@@ -36,6 +36,6 @@ public class CriarNoticiaUseCase {
             noticia.publicar();
         }
 
-        return NoticiaDTO.from(noticiaRepository.salvar(noticia));
+        return NoticiaDTO.from(noticiaRepository.salvar(noticia), null, null);
     }
 }

@@ -30,6 +30,6 @@ public class EditarNoticiaUseCase {
         noticia.validarPermissaoEdicao(usuarioId, ehAdmin);
         noticia.editar(request.titulo(), request.conteudo(), request.resumo(), request.imagemUrl());
 
-        return NoticiaDTO.from(noticiaRepository.salvar(noticia));
+        return NoticiaDTO.from(noticiaRepository.salvar(noticia), null, null);
     }
 }
