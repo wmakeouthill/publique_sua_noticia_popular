@@ -14,7 +14,6 @@ public interface NoticiaJpaRepository extends JpaRepository<NoticiaEntity, Strin
                         SELECT n FROM NoticiaEntity n
                         WHERE n.status = 'PUBLICADA'
                         AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
-                        ORDER BY n.publicadoEm DESC
                         """)
         Page<NoticiaEntity> findPublicadasSemBusca(
                         @Param("categoriaId") String categoriaId,
@@ -25,7 +24,6 @@ public interface NoticiaJpaRepository extends JpaRepository<NoticiaEntity, Strin
                         WHERE n.status = 'PUBLICADA'
                         AND (:categoriaId IS NULL OR n.categoriaId = :categoriaId)
                         AND LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%'))
-                        ORDER BY n.publicadoEm DESC
                         """)
         Page<NoticiaEntity> findPublicadasComBusca(
                         @Param("categoriaId") String categoriaId,
