@@ -68,17 +68,17 @@
 
           <!-- Blocos de conteúdo -->
           <div class="editor-canvas">
-            @for (block of blocks(); track $index) {
+            @for (block of blocks(); track block) {
               <div class="block-wrapper" [class.focused]="currentBlockFocus() === $index">
                 <div class="block-drag-handle" title="Mover bloco">⋮⋮</div>
                 <div
+                  #blockEl
                   [class]="getBlockClass(block)"
                   contenteditable="true"
                   [attr.data-placeholder]="$index === 0 ? 'Comece a escrever... (/ para formatar ou usar IA)' : 'Parágrafo...'"
                   (keydown)="onBlockKeydown($event, $index)"
                   (input)="onBlockInput($event, $index)"
                   (focus)="onBlockFocus($index)"
-                  [innerText]="block.content"
                 ></div>
               </div>
             }

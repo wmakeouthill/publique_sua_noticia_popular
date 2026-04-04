@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, AfterViewChecked, ViewChild, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -22,7 +22,7 @@ interface Block {
   templateUrl: './editor.component.html',
   styleUrl: './editor.component.css'
 })
-export class EditorComponent implements OnInit, OnDestroy {
+export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -33,6 +33,10 @@ export class EditorComponent implements OnInit, OnDestroy {
   private readonly uploadService = inject(UploadService);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChildren('blockEl') blockEls!: QueryList<ElementRef>;
+
+  // Rastreia elementos já inicializados — evita re-setar innerText durante digitação
+  private readonly initializedBlocks = new WeakSet<HTMLElement>();
 
   readonly editandoId = signal<string | null>(null);
   readonly carregando = signal(false);
@@ -341,7 +345,8 @@ export class EditorComponent implements OnInit, OnDestroy {
         const newBlocks = [...this.blocks()];
         newBlocks.splice(index, 1);
         this.blocks.set(newBlocks);
-        this.focusBlock(index > 0 ? index - 1 : 0);
+        const destino = index > 0 ? index - 1 : 0;
+        setTimeout(() => this.focusBlockNoFinal(destino), 30);
       }
     }
   }
@@ -362,10 +367,10 @@ export class EditorComponent implements OnInit, OnDestroy {
   }
 
   onBlockInput(event: Event, index: number): void {
-    const target = event.target as HTMLElement;
-    const current = [...this.blocks()];
-    current[index] = { ...current[index], content: target.innerText };
-    this.blocks.set(current);
+    // Mutação direta no objeto sem chamar .set() — o signal não notifica o CD,
+    // o [innerText] binding não dispara, o cursor não é resetado.
+    // O signal permanece em sincronia porque o objeto é o mesmo por referência.
+    this.blocks()[index].content = (event.target as HTMLElement).innerText;
   }
 
   onBlockFocus(index: number): void {
@@ -379,6 +384,19 @@ export class EditorComponent implements OnInit, OnDestroy {
       this.removerScrollListener();
       this.slashAnchorEl = null;
     }
+  }
+
+  ngAfterViewChecked(): void {
+    // Inicializa o innerText apenas para elementos recém-criados pelo @for.
+    // Elementos já inicializados (user está digitando neles) são ignorados,
+    // evitando o reset do cursor.
+    this.blockEls?.forEach((ref, i) => {
+      const el = ref.nativeElement as HTMLElement;
+      if (!this.initializedBlocks.has(el)) {
+        el.innerText = this.blocks()[i]?.content ?? '';
+        this.initializedBlocks.add(el);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -448,18 +466,29 @@ export class EditorComponent implements OnInit, OnDestroy {
     if (el) el.focus();
   }
 
+  focusBlockNoFinal(index: number): void {
+    const el = this.getBlockEl(index);
+    if (!el) return;
+    el.focus();
+    const range = document.createRange();
+    const sel = window.getSelection();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel?.removeAllRanges();
+    sel?.addRange(range);
+  }
+
   private getBlockEl(index: number): HTMLElement | null {
     const els = document.querySelectorAll('.editable-block');
     return (els[index] as HTMLElement) ?? null;
   }
 
   private sincronizarBlocsDOM(): void {
-    const els = document.querySelectorAll('.editable-block');
-    this.blocks().forEach((block, i) => {
-      const el = els[i] as HTMLElement;
-      if (el && el.innerText !== block.content) {
-        el.innerText = block.content;
-      }
+    // Força re-inicialização: remove do WeakSet para que ngAfterViewChecked
+    // reescreva o conteúdo (usada após reescrita por IA).
+    this.blockEls?.forEach(ref => {
+      const el = ref.nativeElement as HTMLElement;
+      this.initializedBlocks.delete(el);
     });
   }
 
