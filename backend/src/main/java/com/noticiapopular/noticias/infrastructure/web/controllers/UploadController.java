@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,5 +58,13 @@ public class UploadController {
         log.info("Upload realizado: {}", nomeArquivo);
 
         return ResponseEntity.ok(Map.of("url", urlPublica, "nomeArquivo", nomeArquivo));
+    }
+
+    @DeleteMapping("/imagem/{nomeArquivo}")
+    public ResponseEntity<Void> deletarImagem(@PathVariable String nomeArquivo) {
+        // Sanitiza para evitar path traversal
+        String nome = Paths.get(nomeArquivo).getFileName().toString();
+        armazenamentoImagem.excluir(nome);
+        return ResponseEntity.noContent().build();
     }
 }

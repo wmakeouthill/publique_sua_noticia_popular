@@ -88,18 +88,40 @@
             @for (block of blocks(); track block) {
               <div class="block-wrapper" [class.focused]="currentBlockFocus() === $index">
                 <div class="block-drag-handle" title="Mover bloco">⋮⋮</div>
-                <div
-                  #blockEl
-                  [class]="getBlockClass(block)"
-                  contenteditable="true"
-                  [attr.data-placeholder]="$index === 0 ? 'Comece a escrever... (/ para formatar ou usar IA)' : 'Parágrafo...'"
-                  (keydown)="onBlockKeydown($event, $index)"
-                  (input)="onBlockInput($event, $index)"
-                  (focus)="onBlockFocus($index)"
-                ></div>
+                @if (block.type === 'image') {
+                  <div class="block-image-container">
+                    @if (carregandoUpload() && blockFileInputIndex === $index) {
+                      <div class="block-image-loading">
+                        <span class="spinner">↻</span> Enviando imagem...
+                      </div>
+                    } @else if (block.content) {
+                      <div class="block-image-wrap">
+                        <img [src]="block.content" class="block-image" alt="Imagem" />
+                        <button type="button" class="btn-block-img-remove" (click)="removerBlocoImagem($index)">✕</button>
+                      </div>
+                    } @else {
+                      <button type="button" class="block-image-placeholder" (click)="triggerBlocoFileInput($index)">
+                        <span>📷</span>
+                        <span>Clique para adicionar imagem</span>
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <div
+                    #blockEl
+                    [class]="getBlockClass(block)"
+                    contenteditable="true"
+                    [attr.data-block-index]="$index"
+                    [attr.data-placeholder]="$index === 0 ? 'Comece a escrever... (/ para formatar ou usar IA)' : 'Parágrafo...'"
+                    (keydown)="onBlockKeydown($event, $index)"
+                    (input)="onBlockInput($event, $index)"
+                    (focus)="onBlockFocus($index)"
+                  ></div>
+                }
               </div>
             }
           </div>
+          <input #blockFileInput type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onBlocoFileSelected($event)" />
 
           <!-- Botão publicar — fim do artigo -->
           <div class="publish-bar">
@@ -203,7 +225,14 @@
             <small>Pontos com marcador</small>
           </span>
         </li>
-        <li [class.active]="slashMenuIndex() === 5" (click)="mudarTipoBloco(showIaMenu().blockIndex, 'paragraph')">
+        <li [class.active]="slashMenuIndex() === 5" (click)="triggerBlocoFileInput(showIaMenu().blockIndex)">
+          <span class="slash-icon">📷</span>
+          <span class="slash-text">
+            <strong>Imagem</strong>
+            <small>Inserir foto no texto</small>
+          </span>
+        </li>
+        <li [class.active]="slashMenuIndex() === 6" (click)="mudarTipoBloco(showIaMenu().blockIndex, 'paragraph')">
           <span class="slash-icon slash-p">¶</span>
           <span class="slash-text">
             <strong>Parágrafo</strong>
@@ -215,21 +244,21 @@
       <!-- Seção: IA -->
       <div class="slash-section-label slash-ia-label">✨ IA Gemini</div>
       <ul class="slash-list">
-        <li [class.active]="slashMenuIndex() === 6" (click)="refinarComIA(showIaMenu().blockIndex, 'formal')">
+        <li [class.active]="slashMenuIndex() === 7" (click)="refinarComIA(showIaMenu().blockIndex, 'formal')">
           <span class="slash-icon">👔</span>
           <span class="slash-text">
             <strong>Tornar formal</strong>
             <small>Tom jornalístico</small>
           </span>
         </li>
-        <li [class.active]="slashMenuIndex() === 7" (click)="refinarComIA(showIaMenu().blockIndex, 'criativo')">
+        <li [class.active]="slashMenuIndex() === 8" (click)="refinarComIA(showIaMenu().blockIndex, 'criativo')">
           <span class="slash-icon">🎨</span>
           <span class="slash-text">
             <strong>Deixar criativo</strong>
             <small>Linguagem envolvente</small>
           </span>
         </li>
-        <li [class.active]="slashMenuIndex() === 8" (click)="refinarComIA(showIaMenu().blockIndex, 'resumido')">
+        <li [class.active]="slashMenuIndex() === 9" (click)="refinarComIA(showIaMenu().blockIndex, 'resumido')">
           <span class="slash-icon">✂️</span>
           <span class="slash-text">
             <strong>Resumir</strong>

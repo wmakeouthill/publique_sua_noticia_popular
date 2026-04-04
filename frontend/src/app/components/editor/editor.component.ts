@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { Categoria } from '../../models/categoria.model';
 
 interface Block {
-  type: 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'list';
+  type: 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'list' | 'image';
   content: string;
 }
 
@@ -33,7 +33,10 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   private readonly uploadService = inject(UploadService);
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('blockFileInput') blockFileInput!: ElementRef<HTMLInputElement>;
   @ViewChildren('blockEl') blockEls!: QueryList<ElementRef>;
+
+  blockFileInputIndex = -1;
 
   // Rastreia elementos já inicializados — evita re-setar innerText durante digitação
   private readonly initializedBlocks = new WeakSet<HTMLElement>();
@@ -52,7 +55,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   readonly slashMenuIndex = signal(0);
 
   // Ordem flat dos itens do slash menu (deve bater com a ordem no HTML)
-  private readonly SLASH_FORMAT_TYPES: Block['type'][] = ['h1', 'h2', 'h3', 'quote', 'list', 'paragraph'];
+  private readonly SLASH_FORMAT_TYPES: Block['type'][] = ['h1', 'h2', 'h3', 'quote', 'list', 'image', 'paragraph'];
   private readonly SLASH_IA_ESTILOS: Array<'formal' | 'criativo' | 'resumido'> = ['formal', 'criativo', 'resumido'];
   private get SLASH_TOTAL() { return this.SLASH_FORMAT_TYPES.length + this.SLASH_IA_ESTILOS.length; }
 
@@ -137,6 +140,12 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
     const file = input.files?.[0];
     if (!file) return;
 
+    const oldUrl = this.form.value.imagemUrl;
+    if (oldUrl) {
+      const nome = this.extrairNomeArquivo(oldUrl);
+      if (nome) this.uploadService.deletarImagem(nome).subscribe({ error: () => {} });
+    }
+
     this.carregandoUpload.set(true);
     try {
       const resp = await firstValueFrom(this.uploadService.uploadImagem(file));
@@ -151,8 +160,61 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   removerImagem(): void {
+    const url = this.form.value.imagemUrl;
+    if (url) {
+      const nome = this.extrairNomeArquivo(url);
+      if (nome) this.uploadService.deletarImagem(nome).subscribe({ error: () => {} });
+    }
     this.form.patchValue({ imagemUrl: '' });
     this.imagemPreview.set(null);
+  }
+
+  // ─── Imagem inline (bloco de imagem no conteúdo) ────────────────────────────
+
+  triggerBlocoFileInput(index: number): void {
+    this.blockFileInputIndex = index;
+    this.blockFileInput.nativeElement.value = '';
+    this.blockFileInput.nativeElement.click();
+  }
+
+  async onBlocoFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    const index = this.blockFileInputIndex;
+    if (!file || index < 0) return;
+
+    this.carregandoUpload.set(true);
+    try {
+      const resp = await firstValueFrom(this.uploadService.uploadImagem(file));
+      const updated = [...this.blocks()];
+      updated[index] = { type: 'image', content: resp.url };
+      this.blocks.set(updated);
+    } catch {
+      this.notification.error('Erro ao fazer upload da imagem.');
+    } finally {
+      this.carregandoUpload.set(false);
+      this.blockFileInputIndex = -1;
+    }
+  }
+
+  removerBlocoImagem(index: number): void {
+    const url = this.blocks()[index]?.content;
+    if (url) {
+      const nome = this.extrairNomeArquivo(url);
+      if (nome) this.uploadService.deletarImagem(nome).subscribe({ error: () => {} });
+    }
+    const updated = [...this.blocks()];
+    if (updated.length > 1) {
+      updated.splice(index, 1);
+    } else {
+      updated[index] = { type: 'paragraph', content: '' };
+    }
+    this.blocks.set(updated);
+  }
+
+  private extrairNomeArquivo(url: string): string | null {
+    if (!url || !url.startsWith('/uploads/')) return null;
+    return url.split('/').pop() ?? null;
   }
 
   // ─── IA — título ────────────────────────────────────────────────────────────
@@ -418,8 +480,17 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   private executarItemSlash(blockIndex: number, slashIndex: number): void {
+    this.fecharIaMenu();
     if (slashIndex < this.SLASH_FORMAT_TYPES.length) {
-      this.mudarTipoBloco(blockIndex, this.SLASH_FORMAT_TYPES[slashIndex]);
+      const tipo = this.SLASH_FORMAT_TYPES[slashIndex];
+      if (tipo === 'image') {
+        const updated = [...this.blocks()];
+        updated[blockIndex] = { type: 'image', content: '' };
+        this.blocks.set(updated);
+        setTimeout(() => this.triggerBlocoFileInput(blockIndex), 30);
+      } else {
+        this.mudarTipoBloco(blockIndex, tipo);
+      }
     } else {
       this.refinarComIA(blockIndex, this.SLASH_IA_ESTILOS[slashIndex - this.SLASH_FORMAT_TYPES.length]);
     }
@@ -456,10 +527,11 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
     // Inicializa o innerText apenas para elementos recém-criados pelo @for.
     // Elementos já inicializados (user está digitando neles) são ignorados,
     // evitando o reset do cursor.
-    this.blockEls?.forEach((ref, i) => {
+    this.blockEls?.forEach(ref => {
       const el = ref.nativeElement as HTMLElement;
       if (!this.initializedBlocks.has(el)) {
-        el.innerText = this.blocks()[i]?.content ?? '';
+        const idx = parseInt(el.getAttribute('data-block-index') ?? '-1', 10);
+        el.innerText = this.blocks()[idx]?.content ?? '';
         this.initializedBlocks.add(el);
       }
     });
@@ -545,8 +617,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   }
 
   private getBlockEl(index: number): HTMLElement | null {
-    const els = document.querySelectorAll('.editable-block');
-    return (els[index] as HTMLElement) ?? null;
+    return document.querySelector(`[data-block-index="${index}"]`) as HTMLElement ?? null;
   }
 
   private sincronizarBlocsDOM(): void {

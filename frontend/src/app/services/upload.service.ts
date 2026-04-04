@@ -20,4 +20,8 @@ export class UploadService {
     formData.append('arquivo', arquivo);
     return this.http.post<UploadResponse>(`${this.baseUrl}/imagem`, formData);
   }
+
+  deletarImagem(nomeArquivo: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/imagem/${nomeArquivo}`);
+  }
 }
