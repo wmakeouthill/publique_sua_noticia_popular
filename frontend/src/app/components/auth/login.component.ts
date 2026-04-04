@@ -1,4 +1,4 @@
-import { Component, inject, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID } from '@angular/core';
+import { Component, inject, AfterViewInit, ElementRef, ViewChild, PLATFORM_ID, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -26,13 +26,14 @@ export class LoginComponent implements AfterViewInit {
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @ViewChild('googleBtnRef') googleBtnRef!: ElementRef;
 
   readonly carregando = this.auth.carregando;
-  autenticando = false;
-  hasError = false;
-  erroMensagem = '';
+  readonly autenticando = signal(false);
+  readonly hasError = signal(false);
+  readonly erroMensagem = signal('');
 
   ngAfterViewInit() {
     if (this.isBrowser) {
@@ -44,7 +45,8 @@ export class LoginComponent implements AfterViewInit {
     if (typeof window !== 'undefined' && window.google) {
       if (!environment.googleClientId || environment.googleClientId === 'SEU_GOOGLE_CLIENT_ID') {
         console.error('Google Client ID não configurado. Defina NG_APP_GOOGLE_CLIENT_ID ou GOOGLE_CLIENT_ID no .env.');
-        this.hasError = true;
+        this.hasError.set(true);
+        this.erroMensagem.set('Google Client ID não configurado.');
         return;
       }
 
@@ -73,22 +75,24 @@ export class LoginComponent implements AfterViewInit {
   }
 
   async handleCredentialResponse(response: any) {
-    this.hasError = false;
-    this.erroMensagem = '';
-    this.autenticando = true;
+    this.hasError.set(false);
+    this.erroMensagem.set('');
+    this.autenticando.set(true);
+    this.cdr.markForCheck();
     try {
       const sucesso = await this.auth.loginComGoogle(response.credential);
       if (sucesso) {
         this.router.navigate(['/']);
       } else {
-        this.hasError = true;
-        this.erroMensagem = 'Falha ao autenticar. O servidor pode estar indisponível.';
+        this.hasError.set(true);
+        this.erroMensagem.set('Falha ao autenticar. O servidor pode estar indisponível.');
       }
     } catch {
-      this.hasError = true;
-      this.erroMensagem = 'Erro inesperado. Tente novamente.';
+      this.hasError.set(true);
+      this.erroMensagem.set('Erro inesperado. Tente novamente.');
     } finally {
-      this.autenticando = false;
+      this.autenticando.set(false);
+      this.cdr.markForCheck();
     }
   }
 }

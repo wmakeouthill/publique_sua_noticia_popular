@@ -29,6 +29,7 @@ export class FeedComponent implements OnInit {
 
   readonly noticias = signal<NoticiaResumo[]>([]);
   readonly carregandoNoticias = signal(false);
+  readonly erroNoticias = signal(false);
   readonly pagina = signal(0);
   readonly ultimaPagina = signal(false);
 
@@ -41,6 +42,7 @@ export class FeedComponent implements OnInit {
     if (novaBusca) {
       this.pagina.set(0);
       this.noticias.set([]);
+      this.erroNoticias.set(false);
     }
 
     this.carregandoNoticias.set(true);
@@ -53,6 +55,7 @@ export class FeedComponent implements OnInit {
       this.ultimaPagina.set(page.last);
     } catch (e) {
       console.error('Falha ao carregar noticias', e);
+      this.erroNoticias.set(true);
     } finally {
       this.carregandoNoticias.set(false);
     }

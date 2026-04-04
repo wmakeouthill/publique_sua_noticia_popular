@@ -7,7 +7,7 @@
     <p>Acesse sua conta para publicar notícias e criar seu feed personalizado.</p>
 
     <div class="auth-buttons">
-      @if (autenticando) {
+      @if (autenticando()) {
         <div class="loading">
           <div class="spinner">↻</div>
           Autenticando...
@@ -17,9 +17,9 @@
       }
     </div>
 
-    @if (hasError) {
+    @if (hasError()) {
       <div class="error-box">
-        {{ erroMensagem || 'Houve um erro ao tentar autenticar. Tente novamente.' }}
+        {{ erroMensagem() || 'Houve um erro ao tentar autenticar. Tente novamente.' }}
       </div>
     }
 

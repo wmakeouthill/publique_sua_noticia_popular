@@ -53,7 +53,7 @@ public class AdminController {
             @RequestBody Map<String, Boolean> body) {
 
         Usuario usuario = usuarioRepository.buscarPorId(id)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Usuário não encontrado: " + id));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Usuário", id));
 
         Boolean ativo = body.get("ativo");
         if (ativo == null) {

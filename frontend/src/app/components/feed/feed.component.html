@@ -33,12 +33,21 @@
     </div>
   } @empty {
     @if (!carregandoNoticias()) {
-      <div class="empty-state glass-panel animate-fade-in">
-        <div class="icon">📭</div>
-        <h3>Nenhuma notícia encontrada</h3>
-        <p>Não encontramos notícias publicadas com estes critérios no momento.</p>
-        <button class="btn btn-primary" (click)="onFiltrarCategoria(null)">Limpar Filtros</button>
-      </div>
+      @if (erroNoticias()) {
+        <div class="empty-state glass-panel animate-fade-in">
+          <div class="icon">⚠️</div>
+          <h3>Não foi possível carregar as notícias</h3>
+          <p>O servidor pode estar indisponível. Verifique sua conexão e tente novamente.</p>
+          <button class="btn btn-primary" (click)="carregarNoticias(true)">Tentar novamente</button>
+        </div>
+      } @else {
+        <div class="empty-state glass-panel animate-fade-in">
+          <div class="icon">📭</div>
+          <h3>Nenhuma notícia ainda</h3>
+          <p>Seja o primeiro a publicar uma notícia!</p>
+          <button class="btn btn-primary" (click)="onFiltrarCategoria(null)">Limpar Filtros</button>
+        </div>
+      }
     }
   }
 </div>
