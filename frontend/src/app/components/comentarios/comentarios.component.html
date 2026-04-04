@@ -1,0 +1,85 @@
+<section class="comentarios-section">
+  <h2 class="comentarios-titulo">
+    Comentários
+    @if (total() > 0) {
+      <span class="total-badge">{{ total() }}</span>
+    }
+  </h2>
+
+  <!-- Formulário de novo comentário (apenas logado) -->
+  @if (authService.autenticado()) {
+    <div class="comentario-form glass-panel">
+      <div class="form-autor">
+        @if (authService.usuarioAtual()?.avatarUrl) {
+          <img [src]="authService.usuarioAtual()!.avatarUrl!" class="avatar" [alt]="authService.usuarioAtual()!.nome" referrerpolicy="no-referrer" />
+        } @else {
+          <div class="avatar-placeholder">👤</div>
+        }
+        <span class="form-autor-nome">{{ authService.usuarioAtual()?.nome }}</span>
+      </div>
+
+      <textarea
+        class="comentario-textarea"
+        placeholder="Escreva seu comentário..."
+        [value]="novoComentario()"
+        (input)="onTextoChange($event)"
+        [disabled]="enviando()"
+        rows="3"
+        maxlength="1000"
+      ></textarea>
+
+      @if (erroEnvio()) {
+        <p class="erro-msg">{{ erroEnvio() }}</p>
+      }
+
+      <div class="form-footer">
+        <span class="char-count">{{ novoComentario().length }}/1000</span>
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="enviarComentario()"
+          [disabled]="enviando() || !novoComentario().trim()"
+        >
+          @if (enviando()) { Enviando... } @else { Comentar }
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="login-prompt glass-panel">
+      <p>
+        <a routerLink="/login" class="link-login">Faça login</a>
+        para deixar um comentário.
+      </p>
+    </div>
+  }
+
+  <!-- Lista de comentários -->
+  @if (carregando()) {
+    <div class="carregando">Carregando comentários...</div>
+  } @else if (erro()) {
+    <div class="erro-msg">{{ erro() }}</div>
+  } @else if (comentarios().length === 0) {
+    <div class="sem-comentarios">Nenhum comentário ainda. Seja o primeiro!</div>
+  } @else {
+    <ul class="comentarios-lista">
+      @for (comentario of comentarios(); track comentario.id) {
+        <li class="comentario-item">
+          <div class="comentario-autor">
+            @if (comentario.autorAvatarUrl) {
+              <img [src]="comentario.autorAvatarUrl" class="avatar" [alt]="comentario.autorNome" referrerpolicy="no-referrer" />
+            } @else {
+              <div class="avatar-placeholder">👤</div>
+            }
+            <div class="comentario-meta">
+              <span class="autor-nome">{{ comentario.autorNome }}</span>
+              <span class="comentario-data">{{ comentario.criadoEm | tempoRelativo }}</span>
+            </div>
+            @if (podeExcluir(comentario)) {
+              <button class="btn-excluir" (click)="excluirComentario(comentario.id)" title="Excluir comentário">✕</button>
+            }
+          </div>
+          <p class="comentario-conteudo">{{ comentario.conteudo }}</p>
+        </li>
+      }
+    </ul>
+  }
+</section>

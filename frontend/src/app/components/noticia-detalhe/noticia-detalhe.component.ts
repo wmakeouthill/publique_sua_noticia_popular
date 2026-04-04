@@ -7,12 +7,13 @@ import { AuthService } from '../../services/auth.service';
 import { Noticia } from '../../models/noticia.model';
 import { Categoria } from '../../models/categoria.model';
 import { TempoRelativoPipe } from '../../shared/pipes/tempo-relativo.pipe';
+import { ComentariosComponent } from '../comentarios/comentarios.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-noticia-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, TempoRelativoPipe],
+  imports: [CommonModule, RouterLink, TempoRelativoPipe, ComentariosComponent],
   templateUrl: './noticia-detalhe.component.html',
   styleUrl: './noticia-detalhe.component.css'
 })

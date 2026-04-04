@@ -1,0 +1,55 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260404-criar-tabela-comentarios
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: comentarios
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: noticia_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comentario_noticia
+                    references: noticias(id)
+                    deleteCascade: true
+              - column:
+                  name: autor_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_comentario_autor
+                    references: usuarios(id)
+              - column:
+                  name: conteudo
+                  type: varchar(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criado_em
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_comentario_noticia_id
+            tableName: comentarios
+            columns:
+              - column:
+                  name: noticia_id
+        - createIndex:
+            indexName: idx_comentario_autor_id
+            tableName: comentarios
+            columns:
+              - column:
+                  name: autor_id
+      rollback:
+        - dropTable:
+            tableName: comentarios

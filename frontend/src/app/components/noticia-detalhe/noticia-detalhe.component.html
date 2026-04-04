@@ -61,6 +61,8 @@
 
     <div class="article-content" [innerHTML]="getHtmlConteudo(noticia()!.conteudo)"></div>
 
+    <app-comentarios [noticiaId]="noticia()!.id" />
+
     <footer class="article-footer">
       <a routerLink="/" class="btn btn-secondary">← Voltar ao feed</a>
     </footer>
