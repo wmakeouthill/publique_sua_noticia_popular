@@ -4,75 +4,169 @@
     <h3>Carregando Editor...</h3>
   </div>
 } @else {
-  <div class="editor-container animate-fade-in">
-    <div class="editor-header glass-panel">
-      <div class="editor-header-content" [formGroup]="form">
-        <input 
-          type="text" 
-          class="title-input" 
-          placeholder="Escreva um título criativo..."
-          formControlName="titulo"
-        >
-        
+  <div class="editor-layout animate-fade-in" (click)="fecharIaMenu()">
+
+    <!-- ════════════ ÁREA PRINCIPAL ════════════ -->
+    <div class="editor-main">
+
+      <!-- Header: título + metadados -->
+      <div class="editor-header glass-panel" [formGroup]="form" (click)="$event.stopPropagation()">
+
+        <!-- Linha do título -->
+        <div class="title-row">
+          <input
+            type="text"
+            class="title-input"
+            placeholder="Escreva um título..."
+            formControlName="titulo"
+          />
+          <button
+            class="btn-ia-inline"
+            title="Melhorar título com IA"
+            [disabled]="carregandoIa()"
+            (click)="melhorarTitulo()"
+          >✨</button>
+        </div>
+
+        <!-- Categoria + Upload de capa -->
         <div class="meta-inputs">
           <select class="category-select" formControlName="categoriaId">
-            <option value="" disabled>Selecione uma categoria</option>
+            <option value="" disabled>Categoria</option>
             @for (cat of categorias(); track cat.id) {
-              <option [value]="cat.id">{{ cat.nome }}</option>
+              <option [value]="cat.id">{{ cat.icone }} {{ cat.nome }}</option>
             }
           </select>
-          
-          <input 
-            type="url" 
-            class="cover-input" 
-            placeholder="URL da Imagem de Capa (Opcional)"
-            formControlName="imagemUrl"
+
+          <!-- Upload de imagem de capa -->
+          <div class="cover-upload" [class.has-image]="imagemPreview()">
+            @if (carregandoUpload()) {
+              <div class="cover-loading">
+                <span class="spinner">↻</span> Enviando imagem...
+              </div>
+            } @else if (imagemPreview()) {
+              <img [src]="imagemPreview()!" class="cover-preview" alt="Capa" />
+              <div class="cover-overlay">
+                <button class="btn-cover-change" (click)="triggerFileInput()">🖼 Trocar</button>
+                <button class="btn-cover-remove" (click)="removerImagem()">✕ Remover</button>
+              </div>
+            } @else {
+              <button class="cover-placeholder" type="button" (click)="triggerFileInput()">
+                <span class="cover-icon">🖼</span>
+                <span>Adicionar imagem de capa</span>
+              </button>
+            }
+            <input
+              #fileInput
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              hidden
+              (change)="onFileSelected($event)"
+            />
+          </div>
+        </div>
+
+        <!-- Ações do header -->
+        <div class="editor-actions">
+          @if (carregandoIa()) {
+            <div class="badge-ia pulse">✨ IA Trabalhando...</div>
+          }
+          <button
+            class="btn btn-primary"
+            [disabled]="form.invalid || carregando()"
+            (click)="salvar()"
           >
+            {{ editandoId() ? 'Salvar Alterações' : 'Publicar Notícia' }}
+          </button>
         </div>
       </div>
-      
-      <div class="editor-actions">
-        <!-- O loading IA fica visível apenas enquanto o Gemini gera -->
-        @if (carregandoIa()) {
-           <div class="badge-ia pulse">✨ IA Trabalhando...</div>
+
+      <!-- Canvas de escrita -->
+      <div class="editor-canvas" (click)="$event.stopPropagation()">
+        @for (block of blocks(); track $index) {
+          <div class="block-wrapper" [class.focused]="currentBlockFocus() === $index">
+            <div class="block-drag-handle">⋮⋮</div>
+            <div
+              class="editable-block"
+              contenteditable="true"
+              [attr.data-placeholder]="$index === 0 ? 'Comece a escrever... (/ para opções de IA)' : 'Parágrafo...'"
+              (keydown)="onBlockKeydown($event, $index)"
+              (input)="onBlockInput($event, $index)"
+              (focus)="onBlockFocus($index)"
+              [innerText]="block.content"
+            ></div>
+          </div>
         }
-        <button class="btn btn-primary" [disabled]="form.invalid || carregando()" (click)="salvar()">
-          {{ editandoId() ? 'Salvar Alterações' : 'Publicar Notícia' }}
+      </div>
+    </div>
+
+    <!-- ════════════ PAINEL IA (direita) ════════════ -->
+    <aside class="ia-sidebar glass-panel" (click)="$event.stopPropagation()">
+      <div class="ia-sidebar-header">
+        <span class="ia-sidebar-icon">✨</span>
+        <span>Assistente IA</span>
+      </div>
+
+      <!-- Artigo completo -->
+      <div class="ia-section">
+        <p class="ia-section-label">Artigo completo</p>
+        <button
+          class="ia-action-btn ia-btn-primary"
+          [disabled]="carregandoIa()"
+          (click)="reescreverComoNoticia()"
+          title="A IA reescreve seu rascunho como uma notícia jornalística completa"
+        >
+          📰 Reescrever como notícia
+        </button>
+        <button
+          class="ia-action-btn"
+          [disabled]="carregandoIa()"
+          (click)="melhorarTitulo()"
+        >
+          ✨ Melhorar título
         </button>
       </div>
-    </div>
 
-    <div class="editor-canvas">
-      @for (block of blocks(); track $index) {
-        <div class="block-wrapper" [class.focused]="currentBlockFocus() === $index">
-          <div class="block-drag-handle">⋮⋮</div>
-          <div 
-            class="editable-block"
-            contenteditable="true"
-            [attr.data-placeholder]="'Digite o texto ou / para ativar IA'"
-            (keydown)="onBlockKeydown($event, $index)"
-            (input)="onBlockInput($event, $index)"
-            (focus)="onBlockFocus($index)"
-            [innerText]="block.content"
-          ></div>
-        </div>
-      }
-    </div>
-
-    <!-- Dropdown flutuante de Slash Commands da IA -->
-    @if (showIaMenu().visible) {
-      <div 
-        class="ia-slash-menu glass-panel shadow-lg"
-        [style.top.px]="showIaMenu().top + 30"
-        [style.left.px]="showIaMenu().left"
-      >
-        <div class="ia-menu-header">✨ Opções A.I. Gemini</div>
-        <ul>
-           <li (click)="refinarComIA(showIaMenu().blockIndex, 'formal')">👔 Tornar mais Formal</li>
-           <li (click)="refinarComIA(showIaMenu().blockIndex, 'criativo')">🎨 Deixar mais Criativo</li>
-           <li (click)="refinarComIA(showIaMenu().blockIndex, 'resumido')">✂️ Resumir parágrafo</li>
-        </ul>
+      <!-- Bloco atual -->
+      <div class="ia-section">
+        <p class="ia-section-label">Bloco selecionado</p>
+        <button
+          class="ia-action-btn"
+          [disabled]="carregandoIa()"
+          (click)="refinarComIA(currentBlockFocus(), 'formal')"
+        >👔 Tornar formal</button>
+        <button
+          class="ia-action-btn"
+          [disabled]="carregandoIa()"
+          (click)="refinarComIA(currentBlockFocus(), 'criativo')"
+        >🎨 Deixar criativo</button>
+        <button
+          class="ia-action-btn"
+          [disabled]="carregandoIa()"
+          (click)="refinarComIA(currentBlockFocus(), 'resumido')"
+        >✂️ Resumir parágrafo</button>
       </div>
-    }
+
+      <div class="ia-hint">
+        <p>Digite <kbd>/</kbd> em qualquer parágrafo para abrir o menu de IA inline.</p>
+      </div>
+    </aside>
+
   </div>
+
+  <!-- Slash command menu (fixed, aparece sobre o cursor) -->
+  @if (showIaMenu().visible) {
+    <div
+      class="ia-slash-menu glass-panel"
+      [style.top.px]="showIaMenu().top"
+      [style.left.px]="showIaMenu().left"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="ia-menu-header">✨ IA — o que fazer com este parágrafo?</div>
+      <ul>
+        <li (click)="refinarComIA(showIaMenu().blockIndex, 'formal')">👔 Tornar mais formal</li>
+        <li (click)="refinarComIA(showIaMenu().blockIndex, 'criativo')">🎨 Deixar mais criativo</li>
+        <li (click)="refinarComIA(showIaMenu().blockIndex, 'resumido')">✂️ Resumir parágrafo</li>
+      </ul>
+    </div>
+  }
 }

@@ -3,6 +3,16 @@ export interface PromptRefinarTexto {
   instrucao: string;
 }
 
+export interface ReescreverNoticiaRequest {
+  titulo: string;
+  conteudo: string;
+}
+
+export interface MelhorarTituloRequest {
+  tituloAtual: string;
+  conteudoResumo?: string;
+}
+
 export interface RespostaIA {
   titulo: string;
   resumo: string;

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { PromptRefinarTexto, RespostaIA } from '../models/ia.model';
+import { MelhorarTituloRequest, PromptRefinarTexto, ReescreverNoticiaRequest, RespostaIA } from '../models/ia.model';
 
 @Injectable({
   providedIn: 'root'
@@ -21,5 +21,13 @@ export class IaService {
 
   refinarConteudo(request: PromptRefinarTexto): Observable<RespostaIA> {
     return this.http.post<RespostaIA>(`${this.baseUrl}/refinar-texto`, request);
+  }
+
+  reescreverNoticia(request: ReescreverNoticiaRequest): Observable<RespostaIA> {
+    return this.http.post<RespostaIA>(`${this.baseUrl}/reescrever-noticia`, request);
+  }
+
+  melhorarTitulo(request: MelhorarTituloRequest): Observable<RespostaIA> {
+    return this.http.post<RespostaIA>(`${this.baseUrl}/melhorar-titulo`, request);
   }
 }

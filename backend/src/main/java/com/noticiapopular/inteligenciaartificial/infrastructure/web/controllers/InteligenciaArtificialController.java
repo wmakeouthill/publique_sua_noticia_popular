@@ -15,6 +15,8 @@ public class InteligenciaArtificialController {
     private final GerarImagemComGeminiUseCase gerarImagem;
     private final GerarTextoNoticiaUseCase gerarTexto;
     private final RefinarTextoNoticiaUseCase refinarTexto;
+    private final ReescreverNoticiaUseCase reescreverNoticia;
+    private final MelhorarTituloUseCase melhorarTitulo;
 
     @PostMapping("/gerar-imagem")
     public ResponseEntity<ImagemGeradaResponse> gerarImagem(
@@ -32,5 +34,17 @@ public class InteligenciaArtificialController {
     public ResponseEntity<TextoGeradoResponse> refinarTexto(
             @Valid @RequestBody RefinarTextoRequest request) {
         return ResponseEntity.ok(refinarTexto.executar(request));
+    }
+
+    @PostMapping("/reescrever-noticia")
+    public ResponseEntity<TextoGeradoResponse> reescreverNoticia(
+            @Valid @RequestBody ReescreverNoticiaRequest request) {
+        return ResponseEntity.ok(reescreverNoticia.executar(request));
+    }
+
+    @PostMapping("/melhorar-titulo")
+    public ResponseEntity<TextoGeradoResponse> melhorarTitulo(
+            @Valid @RequestBody MelhorarTituloRequest request) {
+        return ResponseEntity.ok(melhorarTitulo.executar(request));
     }
 }
