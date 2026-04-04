@@ -28,7 +28,7 @@
               <span>Clique para adicionar imagem de capa</span>
             </button>
           }
-          <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onFileSelected($event)" />
+          <input #fileInput type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden (change)="onFileSelected($event)" />
         </div>
 
         <!-- Corpo do artigo -->
@@ -121,7 +121,7 @@
               </div>
             }
           </div>
-          <input #blockFileInput type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="onBlocoFileSelected($event)" />
+          <input #blockFileInput type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden (change)="onBlocoFileSelected($event)" />
 
           <!-- Botão publicar — fim do artigo -->
           <div class="publish-bar">

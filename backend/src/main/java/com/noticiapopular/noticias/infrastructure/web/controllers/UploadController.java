@@ -21,7 +21,7 @@ import java.util.Set;
 public class UploadController {
 
     private static final Set<String> CONTENT_TYPES_PERMITIDOS =
-            Set.of("image/jpeg", "image/png", "image/webp", "image/gif");
+            Set.of("image/jpeg", "image/png", "image/webp", "image/gif", "image/avif");
 
     private final ArmazenamentoImagemPort armazenamentoImagem;
 

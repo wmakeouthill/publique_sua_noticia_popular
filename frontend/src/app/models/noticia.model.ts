@@ -7,6 +7,8 @@ export interface NoticiaResumo {
   imagemUrl: string;
   categoriaId: string;
   autorId: string;
+  autorNome: string | null;
+  autorAvatarUrl: string | null;
   status: StatusNoticia;
   visualizacoes: number;
   criadoEm: string;

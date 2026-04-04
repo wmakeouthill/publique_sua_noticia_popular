@@ -22,6 +22,14 @@
     <p class="card-summary">{{ noticia().resumo }}</p>
 
     <div class="card-footer">
+      <div class="autor-info">
+        @if (noticia().autorAvatarUrl) {
+          <img [src]="noticia().autorAvatarUrl!" class="autor-avatar" [alt]="noticia().autorNome ?? ''" referrerpolicy="no-referrer" />
+        } @else {
+          <div class="autor-avatar-placeholder">👤</div>
+        }
+        <span class="autor-nome">{{ noticia().autorNome ?? 'Autor' }}</span>
+      </div>
       <div class="meta-info">
         <span class="date">{{ noticia().publicadoEm | tempoRelativo }}</span>
         <span class="views">👁️ {{ noticia().visualizacoes }}</span>

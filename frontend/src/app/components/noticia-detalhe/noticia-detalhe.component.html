@@ -26,8 +26,13 @@
 
       <div class="article-meta">
         <div class="author-info">
-          <div class="avatar-icon">👤</div>
+          @if (noticia()!.autorAvatarUrl) {
+            <img [src]="noticia()!.autorAvatarUrl!" class="autor-avatar" [alt]="noticia()!.autorNome ?? ''" referrerpolicy="no-referrer" />
+          } @else {
+            <div class="autor-avatar-placeholder">👤</div>
+          }
           <div>
+            <span class="autor-nome">{{ noticia()!.autorNome ?? 'Autor' }}</span>
             <span class="publish-date">
               Publicado {{ noticia()!.publicadoEm | tempoRelativo }} · {{ noticia()!.visualizacoes }} visualizações
             </span>

@@ -11,12 +11,14 @@ public record NoticiaResumoDTO(
         String imagemUrl,
         String categoriaId,
         String autorId,
+        String autorNome,
+        String autorAvatarUrl,
         String status,
         long visualizacoes,
         Instant criadoEm,
         Instant publicadoEm
 ) {
-    public static NoticiaResumoDTO from(Noticia noticia) {
+    public static NoticiaResumoDTO from(Noticia noticia, String autorNome, String autorAvatarUrl) {
         return new NoticiaResumoDTO(
                 noticia.getId(),
                 noticia.getTitulo(),
@@ -24,6 +26,8 @@ public record NoticiaResumoDTO(
                 noticia.getImagemUrl(),
                 noticia.getCategoriaId(),
                 noticia.getAutorId(),
+                autorNome,
+                autorAvatarUrl,
                 noticia.getStatus().name(),
                 noticia.getVisualizacoes(),
                 noticia.getCriadoEm(),
