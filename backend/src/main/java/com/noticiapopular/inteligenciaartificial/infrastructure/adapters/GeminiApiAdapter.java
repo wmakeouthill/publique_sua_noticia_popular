@@ -71,7 +71,7 @@ public class GeminiApiAdapter implements GeminiApiPort {
 
         try {
             var resposta = webClient.post()
-                    .uri("/models/gemini-2.0-flash:generateContent?key=" + apiKey)
+                    .uri("/models/gemini-3.1-flash-lite-preview:generateContent?key=" + apiKey)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)

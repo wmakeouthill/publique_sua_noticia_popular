@@ -162,13 +162,25 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       return;
     }
 
+    const conteudoTotal = this.blocks()
+      .map(b => b.content)
+      .filter(c => c.trim())
+      .join(' ');
+
+    if (conteudoTotal.length < 150) {
+      this.notification.warning('Escreva pelo menos 150 caracteres no conteúdo antes de melhorar a manchete.');
+      return;
+    }
+
+    const confirmado = window.confirm(
+      'Você já terminou de escrever a notícia?\n\n' +
+      'A IA vai sugerir uma manchete baseada apenas no que você escreveu, sem inventar nada.'
+    );
+    if (!confirmado) return;
+
     this.carregandoIa.set(true);
     try {
-      const resumo = this.blocks()
-        .map(b => b.content)
-        .filter(c => c.trim())
-        .join(' ')
-        .substring(0, 300);
+      const resumo = conteudoTotal.substring(0, 300);
 
       const res = await firstValueFrom(
         this.iaService.melhorarTitulo({ tituloAtual, conteudoResumo: resumo })

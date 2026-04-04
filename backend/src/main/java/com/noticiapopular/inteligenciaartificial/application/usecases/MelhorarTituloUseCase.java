@@ -20,13 +20,18 @@ public class MelhorarTituloUseCase {
                 : "";
 
         String prompt = """
-                Você é um editor de manchetes jornalísticas. Melhore o título abaixo para que seja \
-                mais impactante, claro e profissional, adequado para um portal de notícias online.
+                Você é um editor de manchetes jornalísticas. Reescreva a manchete abaixo de forma \
+                mais clara e direta, usando SOMENTE as informações presentes no título e no contexto \
+                fornecidos. Não invente fatos, nomes, números ou detalhes que não estejam no texto.
 
-                TÍTULO ATUAL: %s%s
+                MANCHETE ATUAL: %s%s
 
-                Retorne APENAS o novo título melhorado, sem aspas, sem explicações, sem pontuação \
-                final desnecessária. Máximo 100 caracteres. Em português brasileiro.
+                Regras obrigatórias:
+                - Use apenas o que está no contexto acima
+                - Não acrescente informações novas
+                - Seja direto e jornalístico
+                - Máximo 100 caracteres
+                - Sem aspas, sem explicações, em português brasileiro
                 """.formatted(request.tituloAtual(), contexto);
 
         String tituloMelhorado = geminiApi.gerarTexto(prompt)
