@@ -340,7 +340,10 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       this.blocks.set(newBlocks);
       setTimeout(() => this.focusBlock(index + 1), 30);
     } else if (event.key === 'Backspace' && this.blocks()[index].content === '') {
-      if (this.blocks().length > 1) {
+      if (this.blocks()[index].type !== 'paragraph') {
+        event.preventDefault();
+        this.mudarTipoBloco(index, 'paragraph');
+      } else if (this.blocks().length > 1) {
         event.preventDefault();
         const newBlocks = [...this.blocks()];
         newBlocks.splice(index, 1);
