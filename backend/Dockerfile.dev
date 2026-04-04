@@ -9,9 +9,11 @@ COPY pom.xml .
 RUN --mount=type=cache,target=/root/.m2 \
      mvn dependency:go-offline -DskipTests -B -q
 
+COPY dev-watch.sh ./dev-watch.sh
+RUN chmod +x ./dev-watch.sh
+
 COPY src ./src
 
 EXPOSE 8080 5005
 
-CMD ["mvn", "spring-boot:run", \
-     "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -XX:+UseG1GC -XX:MaxRAMPercentage=60.0 -XX:+UseStringDeduplication -Xss256k"]
+CMD ["sh", "-c", "./dev-watch.sh & exec mvn spring-boot:run -Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -XX:+UseG1GC -XX:MaxRAMPercentage=60.0 -XX:+UseStringDeduplication -Xss256k'"]
