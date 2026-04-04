@@ -1,7 +1,7 @@
 <article class="noticia-card glass-panel" [routerLink]="['/noticia', noticia().id]">
   <div class="card-image-wrapper">
     @if (noticia().imagemUrl) {
-      <img [src]="noticia().imagemUrl" [alt]="noticia().titulo" class="card-image" loading="lazy">
+      <img [src]="noticia().imagemUrl" [alt]="noticia().titulo" class="card-image" loading="lazy" [style.object-position]="coverObjectPosition()">
     } @else {
       <div class="card-image-placeholder">
         <span>📰</span>

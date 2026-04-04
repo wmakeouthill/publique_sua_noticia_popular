@@ -17,8 +17,15 @@
               <span class="spinner">↻</span> Enviando imagem...
             </div>
           } @else if (imagemPreview()) {
-            <img [src]="imagemPreview()!" class="cover-img" alt="Capa" />
+            <img
+              [src]="imagemPreview()!"
+              class="cover-img"
+              alt="Capa"
+              [style.object-position]="'center ' + coverPositionY() + '%'"
+              (pointerdown)="startCoverDrag($event)"
+            />
             <div class="cover-overlay">
+              <span class="cover-drag-hint">↕ Arraste para enquadrar</span>
               <button type="button" class="btn-cover-action" (click)="triggerFileInput()">🖼 Trocar</button>
               <button type="button" class="btn-cover-action btn-cover-remove" (click)="removerImagem()">✕ Remover</button>
             </div>

@@ -51,7 +51,11 @@
 
     @if (noticia()!.imagemUrl) {
       <figure class="article-cover">
-        <img [src]="noticia()!.imagemUrl" [alt]="noticia()!.titulo">
+        <img
+          [src]="noticia()!.imagemUrl"
+          [alt]="noticia()!.titulo"
+          [style.object-position]="coverObjectPosition()"
+        >
       </figure>
     }
 

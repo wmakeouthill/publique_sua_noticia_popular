@@ -21,6 +21,12 @@ export class NoticiaCardComponent {
     this.categoriasMap().get(this.noticia().categoriaId)
   );
 
+  readonly coverObjectPosition = computed(() => {
+    const url = this.noticia().imagemUrl ?? '';
+    const coverY = new URL(url, 'http://x').searchParams.get('coverY');
+    return `center ${coverY ? parseInt(coverY, 10) : 50}%`;
+  });
+
   get statusText(): string {
     return this.noticia().status === 'PUBLICADA' ? 'Publicada'
          : this.noticia().status === 'RASCUNHO'  ? 'Rascunho'

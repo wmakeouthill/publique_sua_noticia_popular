@@ -28,6 +28,13 @@ export class NoticiaDetalheComponent implements OnInit {
   readonly erro = signal<string | null>(null);
 
   // Computed para verificar se o usuário atual é o autor da notícia logado
+  readonly coverObjectPosition = computed(() => {
+    const url = this.noticia()?.imagemUrl ?? '';
+    const coverY = new URL(url, 'http://x').searchParams.get('coverY');
+    const y = coverY ? parseInt(coverY, 10) : 50;
+    return `center ${y}%`;
+  });
+
   readonly isAutor = computed(() => {
     const usuarioAtual = this.authService.usuarioAtual();
     const noticiaAtual = this.noticia();

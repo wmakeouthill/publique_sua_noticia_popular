@@ -50,6 +50,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   readonly categorias = signal<Categoria[]>([]);
   readonly currentBlockFocus = signal(0);
   readonly imagemPreview = signal<string | null>(null);
+  readonly coverPositionY = signal(50); // 0–100%, padrão 50 (centro)
   readonly activeImageBlock = signal(-1);
 
   readonly showIaMenu = signal<{ visible: boolean; blockIndex: number; top: number; left: number; maxHeight: number }>({
@@ -110,6 +111,8 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
 
       if (noticia.imagemUrl) {
         this.imagemPreview.set(noticia.imagemUrl);
+        const coverY = new URL(noticia.imagemUrl, 'http://x').searchParams.get('coverY');
+        this.coverPositionY.set(coverY ? parseInt(coverY, 10) : 50);
       }
 
       try {
@@ -156,6 +159,7 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       const resp = await firstValueFrom(this.uploadService.uploadImagem(file));
       this.form.patchValue({ imagemUrl: resp.url });
       this.imagemPreview.set(resp.url);
+      this.coverPositionY.set(50);
     } catch {
       this.notification.error('Erro ao fazer upload da imagem. Use apenas JPG, PNG ou WebP.');
     } finally {
@@ -219,7 +223,35 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   private extrairNomeArquivo(url: string): string | null {
     if (!url || !url.startsWith('/uploads/')) return null;
-    return url.split('/').pop() ?? null;
+    return url.split('/').pop()?.split('?')[0] ?? null;
+  }
+
+  // ─── Drag vertical da imagem de capa ────────────────────────────────────────
+
+  startCoverDrag(event: PointerEvent): void {
+    event.preventDefault();
+    const img = event.currentTarget as HTMLElement;
+    img.setPointerCapture(event.pointerId);
+
+    const startY   = event.clientY;
+    const startPos = this.coverPositionY();
+    const height   = img.offsetHeight;
+
+    const onMove = (e: PointerEvent) => {
+      const delta    = e.clientY - startY;
+      const deltaPct = (delta / height) * 100;
+      const newPos   = Math.max(0, Math.min(100, startPos + deltaPct));
+      this.coverPositionY.set(Math.round(newPos));
+    };
+
+    const onUp = () => {
+      img.releasePointerCapture(event.pointerId);
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+    };
+
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   }
 
   // ─── Layout e resize de imagem inline ───────────────────────────────────────
@@ -703,7 +735,11 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
     }
 
     this.carregando.set(true);
-    const { titulo, submanchete, categoriaId, imagemUrl } = this.form.value;
+    const { titulo, submanchete, categoriaId } = this.form.value;
+    const rawUrl    = this.form.value.imagemUrl ?? '';
+    const baseUrl   = rawUrl.split('?')[0];
+    const posY      = this.coverPositionY();
+    const imagemUrl = baseUrl ? (posY !== 50 ? `${baseUrl}?coverY=${posY}` : baseUrl) : '';
 
     const jsonConteudo = {
       blocks: this.blocks().map(b => ({
