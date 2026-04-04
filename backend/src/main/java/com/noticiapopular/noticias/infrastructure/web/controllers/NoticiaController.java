@@ -30,23 +30,27 @@ public class NoticiaController {
             @RequestParam(required = false) String busca,
             @RequestParam(defaultValue = "0") int pagina,
             @RequestParam(defaultValue = "12") int tamanho,
-            @RequestParam(defaultValue = "MAIS_RECENTE") String ordenacao) {
+            @RequestParam(defaultValue = "MAIS_RECENTE") String ordenacao,
+            @AuthenticationPrincipal String usuarioId) {
 
         var filtro = new FiltroNoticiaRequest(categoriaId, busca);
 
         Sort sort = switch (ordenacao) {
-            case "MAIS_ANTIGO" -> Sort.by("publicadoEm").ascending();
-            case "MAIS_VISTO"  -> Sort.by("visualizacoes").descending();
-            default            -> Sort.by("publicadoEm").descending();
+            case "MAIS_ANTIGO"  -> Sort.by("publicadoEm").ascending();
+            case "MAIS_VISTO"   -> Sort.by("visualizacoes").descending();
+            case "MAIS_CURTIDO" -> Sort.unsorted(); // ordenação via query nativa
+            default             -> Sort.by("publicadoEm").descending();
         };
 
         var pageable = PageRequest.of(pagina, tamanho, sort);
-        return ResponseEntity.ok(listarNoticiasFeed.executar(filtro, pageable));
+        return ResponseEntity.ok(listarNoticiasFeed.executar(filtro, pageable, usuarioId, ordenacao));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NoticiaDTO> buscarPorId(@PathVariable String id) {
-        return ResponseEntity.ok(buscarNoticiaPorId.executar(id));
+    public ResponseEntity<NoticiaDTO> buscarPorId(
+            @PathVariable String id,
+            @AuthenticationPrincipal String usuarioId) {
+        return ResponseEntity.ok(buscarNoticiaPorId.executar(id, usuarioId));
     }
 
     @GetMapping("/minhas")
@@ -56,7 +60,7 @@ public class NoticiaController {
             @RequestParam(defaultValue = "12") int tamanho) {
 
         var pageable = PageRequest.of(pagina, tamanho);
-        return ResponseEntity.ok(listarNoticiasPorAutor.executar(usuarioId, pageable));
+        return ResponseEntity.ok(listarNoticiasPorAutor.executar(usuarioId, pageable, usuarioId));
     }
 
     @PostMapping

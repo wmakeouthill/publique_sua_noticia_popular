@@ -152,3 +152,7 @@
   color: var(--text-muted);
   font-size: 0.8rem;
 }
+
+.likes.liked {
+  color: #e53e3e;
+}

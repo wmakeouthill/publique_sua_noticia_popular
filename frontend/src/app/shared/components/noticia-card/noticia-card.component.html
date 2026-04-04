@@ -33,6 +33,9 @@
       <div class="meta-info">
         <span class="date">{{ noticia().publicadoEm | tempoRelativo }}</span>
         <span class="views">👁️ {{ noticia().visualizacoes }}</span>
+        <span class="likes" [class.liked]="noticia().likedByMe">
+          {{ noticia().likedByMe ? '❤️' : '🤍' }} {{ noticia().totalLikes }}
+        </span>
       </div>
     </div>
   </div>

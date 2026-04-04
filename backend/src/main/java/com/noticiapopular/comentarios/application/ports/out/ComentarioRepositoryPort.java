@@ -9,7 +9,7 @@ public interface ComentarioRepositoryPort {
 
     Comentario salvar(Comentario comentario);
 
-    List<Comentario> listarPorNoticia(String noticiaId);
+    List<Comentario> listarPorNoticia(String noticiaId, String ordenacao);
 
     Optional<Comentario> buscarPorId(String id);
 

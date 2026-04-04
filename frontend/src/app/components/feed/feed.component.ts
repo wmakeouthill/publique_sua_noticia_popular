@@ -7,7 +7,7 @@ import { Categoria } from '../../models/categoria.model';
 import { NoticiaCardComponent } from '../../shared/components/noticia-card/noticia-card.component';
 import { firstValueFrom } from 'rxjs';
 
-type Ordenacao = 'MAIS_RECENTE' | 'MAIS_ANTIGO' | 'MAIS_VISTO';
+type Ordenacao = 'MAIS_RECENTE' | 'MAIS_ANTIGO' | 'MAIS_VISTO' | 'MAIS_CURTIDO';
 
 @Component({
   selector: 'app-feed',
@@ -39,9 +39,10 @@ export class FeedComponent implements OnInit, AfterViewInit {
   readonly sortDropdownOpen = signal(false);
 
   readonly ordenacaoOpcoes: { valor: Ordenacao; label: string; icone: string }[] = [
-    { valor: 'MAIS_RECENTE', label: 'Mais recentes', icone: '🕐' },
-    { valor: 'MAIS_ANTIGO',  label: 'Mais antigos',  icone: '📅' },
-    { valor: 'MAIS_VISTO',   label: 'Mais vistos',   icone: '🔥' },
+    { valor: 'MAIS_RECENTE',  label: 'Mais recentes', icone: '🕐' },
+    { valor: 'MAIS_ANTIGO',   label: 'Mais antigos',  icone: '📅' },
+    { valor: 'MAIS_VISTO',    label: 'Mais vistos',   icone: '🔥' },
+    { valor: 'MAIS_CURTIDO',  label: 'Mais curtidos', icone: '❤️' },
   ];
 
   readonly ordenacaoAtualLabel = computed(() =>

@@ -61,6 +61,22 @@
 
     <div class="article-content" [innerHTML]="getHtmlConteudo(noticia()!.conteudo)"></div>
 
+    <div class="article-reactions">
+      <button
+        class="like-btn"
+        [class.liked]="likedByMe()"
+        [disabled]="toggling() || !authService.autenticado()"
+        (click)="toggleLike()"
+        [title]="authService.autenticado() ? (likedByMe() ? 'Descurtir' : 'Curtir') : 'Faça login para curtir'"
+      >
+        <span class="like-icon">{{ likedByMe() ? '❤️' : '🤍' }}</span>
+        <span class="like-count">{{ totalLikes() }}</span>
+      </button>
+      @if (!authService.autenticado()) {
+        <span class="like-hint">Faça <a routerLink="/login">login</a> para curtir</span>
+      }
+    </div>
+
     <app-comentarios [noticiaId]="noticia()!.id" />
 
     <footer class="article-footer">

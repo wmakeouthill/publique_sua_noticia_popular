@@ -15,6 +15,8 @@ public interface NoticiaRepositoryPort {
 
     Page<Noticia> listarPublicadas(String categoriaId, String busca, Pageable pageable);
 
+    Page<Noticia> listarPublicadasPorLikes(String categoriaId, String busca, Pageable pageable);
+
     Page<Noticia> listarPorAutor(String autorId, Pageable pageable);
 
     void excluir(String id);

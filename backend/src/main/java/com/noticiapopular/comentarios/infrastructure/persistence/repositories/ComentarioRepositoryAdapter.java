@@ -23,9 +23,14 @@ public class ComentarioRepositoryAdapter implements ComentarioRepositoryPort {
     }
 
     @Override
-    public List<Comentario> listarPorNoticia(String noticiaId) {
-        return jpaRepository.findByNoticiaIdOrderByCriadoEmAsc(noticiaId)
-                .stream().map(mapper::toDomain).collect(Collectors.toList());
+    public List<Comentario> listarPorNoticia(String noticiaId, String ordenacao) {
+        List<com.noticiapopular.comentarios.infrastructure.persistence.entities.ComentarioEntity> entities =
+                switch (ordenacao != null ? ordenacao : "MAIS_RECENTE") {
+                    case "MAIS_ANTIGO"  -> jpaRepository.findByNoticiaIdOrderByCriadoEmAsc(noticiaId);
+                    case "MAIS_CURTIDO" -> jpaRepository.findByNoticiaIdOrderByLikes(noticiaId);
+                    default             -> jpaRepository.findByNoticiaIdOrderByCriadoEmDesc(noticiaId);
+                };
+        return entities.stream().map(mapper::toDomain).collect(Collectors.toList());
     }
 
     @Override

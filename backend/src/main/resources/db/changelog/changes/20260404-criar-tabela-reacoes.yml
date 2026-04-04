@@ -1,0 +1,58 @@
+databaseChangeLog:
+  - changeSet:
+      id: 20260404-criar-tabela-reacoes
+      author: portal-noticias
+      changes:
+        - createTable:
+            tableName: reacoes
+            columns:
+              - column:
+                  name: id
+                  type: varchar(36)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: usuario_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_reacao_usuario
+                    references: usuarios(id)
+              - column:
+                  name: alvo_tipo
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: alvo_id
+                  type: varchar(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: criado_em
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: reacoes
+            columnNames: usuario_id, alvo_tipo, alvo_id
+            constraintName: uq_reacao_usuario_alvo
+        - createIndex:
+            indexName: idx_reacao_alvo
+            tableName: reacoes
+            columns:
+              - column:
+                  name: alvo_tipo
+              - column:
+                  name: alvo_id
+        - createIndex:
+            indexName: idx_reacao_usuario_id
+            tableName: reacoes
+            columns:
+              - column:
+                  name: usuario_id
+      rollback:
+        - dropTable:
+            tableName: reacoes

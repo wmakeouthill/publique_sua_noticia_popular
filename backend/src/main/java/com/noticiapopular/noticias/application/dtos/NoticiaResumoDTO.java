@@ -15,10 +15,13 @@ public record NoticiaResumoDTO(
         String autorAvatarUrl,
         String status,
         long visualizacoes,
+        long totalLikes,
+        boolean likedByMe,
         Instant criadoEm,
         Instant publicadoEm
 ) {
-    public static NoticiaResumoDTO from(Noticia noticia, String autorNome, String autorAvatarUrl) {
+    public static NoticiaResumoDTO from(Noticia noticia, String autorNome, String autorAvatarUrl,
+                                        long totalLikes, boolean likedByMe) {
         return new NoticiaResumoDTO(
                 noticia.getId(),
                 noticia.getTitulo(),
@@ -30,6 +33,8 @@ public record NoticiaResumoDTO(
                 autorAvatarUrl,
                 noticia.getStatus().name(),
                 noticia.getVisualizacoes(),
+                totalLikes,
+                likedByMe,
                 noticia.getCriadoEm(),
                 noticia.getPublicadoEm()
         );

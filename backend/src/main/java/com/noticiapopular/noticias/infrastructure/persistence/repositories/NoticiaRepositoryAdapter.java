@@ -42,6 +42,16 @@ public class NoticiaRepositoryAdapter implements NoticiaRepositoryPort {
     }
 
     @Override
+    public Page<Noticia> listarPublicadasPorLikes(String categoriaId, String busca, Pageable pageable) {
+        if (!StringUtils.hasText(busca)) {
+            return jpaRepository.findPublicadasOrderByLikes(categoriaId, pageable)
+                    .map(noticiaMapper::toDomain);
+        }
+        return jpaRepository.findPublicadasComBuscaOrderByLikes(categoriaId, busca, pageable)
+                .map(noticiaMapper::toDomain);
+    }
+
+    @Override
     public Page<Noticia> listarPorAutor(String autorId, Pageable pageable) {
         return jpaRepository.findByAutorIdOrderByCriadoEmDesc(autorId, pageable)
                 .map(noticiaMapper::toDomain);

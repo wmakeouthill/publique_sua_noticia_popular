@@ -32,6 +32,51 @@ public interface NoticiaJpaRepository extends JpaRepository<NoticiaEntity, Strin
 
         Page<NoticiaEntity> findByAutorIdOrderByCriadoEmDesc(String autorId, Pageable pageable);
 
+        @Query(value = """
+                        SELECT n.* FROM noticias n
+                        LEFT JOIN (
+                          SELECT alvo_id, COUNT(*) AS total
+                          FROM reacoes WHERE alvo_tipo = 'NOTICIA'
+                          GROUP BY alvo_id
+                        ) r ON n.id = r.alvo_id
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoria_id = :categoriaId)
+                        ORDER BY COALESCE(r.total, 0) DESC
+                        """,
+                countQuery = """
+                        SELECT COUNT(*) FROM noticias n
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoria_id = :categoriaId)
+                        """,
+                nativeQuery = true)
+        Page<NoticiaEntity> findPublicadasOrderByLikes(
+                        @Param("categoriaId") String categoriaId,
+                        Pageable pageable);
+
+        @Query(value = """
+                        SELECT n.* FROM noticias n
+                        LEFT JOIN (
+                          SELECT alvo_id, COUNT(*) AS total
+                          FROM reacoes WHERE alvo_tipo = 'NOTICIA'
+                          GROUP BY alvo_id
+                        ) r ON n.id = r.alvo_id
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoria_id = :categoriaId)
+                        AND LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%'))
+                        ORDER BY COALESCE(r.total, 0) DESC
+                        """,
+                countQuery = """
+                        SELECT COUNT(*) FROM noticias n
+                        WHERE n.status = 'PUBLICADA'
+                        AND (:categoriaId IS NULL OR n.categoria_id = :categoriaId)
+                        AND LOWER(n.titulo) LIKE LOWER(CONCAT('%', :busca, '%'))
+                        """,
+                nativeQuery = true)
+        Page<NoticiaEntity> findPublicadasComBuscaOrderByLikes(
+                        @Param("categoriaId") String categoriaId,
+                        @Param("busca") String busca,
+                        Pageable pageable);
+
         long countByStatus(StatusNoticia status);
 
         long countByCategoriaId(String categoriaId);

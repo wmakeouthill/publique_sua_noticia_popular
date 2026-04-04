@@ -14,8 +14,10 @@ export class ComentarioService {
     return `${environment.apiUrl}/noticias/${noticiaId}/comentarios`;
   }
 
-  listar(noticiaId: string): Observable<Comentario[]> {
-    return this.http.get<Comentario[]>(this.baseUrl(noticiaId));
+  listar(noticiaId: string, ordenacao = 'MAIS_RECENTE'): Observable<Comentario[]> {
+    return this.http.get<Comentario[]>(this.baseUrl(noticiaId), {
+      params: { ordenacao }
+    });
   }
 
   criar(noticiaId: string, request: CriarComentarioRequest): Observable<Comentario> {

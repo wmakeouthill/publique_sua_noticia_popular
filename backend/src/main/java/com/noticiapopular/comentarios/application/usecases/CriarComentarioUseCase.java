@@ -31,6 +31,6 @@ public class CriarComentarioUseCase {
         var comentario = Comentario.criar(noticiaId, autorId, request.conteudo());
         var salvo = comentarioRepository.salvar(comentario);
 
-        return ComentarioDTO.from(salvo, autor.getNome(), autor.getAvatarUrl());
+        return ComentarioDTO.from(salvo, autor.getNome(), autor.getAvatarUrl(), 0L, false);
     }
 }

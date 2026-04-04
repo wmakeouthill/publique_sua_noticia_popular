@@ -11,6 +11,8 @@ export interface NoticiaResumo {
   autorAvatarUrl: string | null;
   status: StatusNoticia;
   visualizacoes: number;
+  totalLikes: number;
+  likedByMe: boolean;
   criadoEm: string;
   publicadoEm: string;
 }

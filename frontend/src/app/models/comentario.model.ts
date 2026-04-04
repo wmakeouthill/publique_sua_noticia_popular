@@ -5,6 +5,8 @@ export interface Comentario {
   autorNome: string;
   autorAvatarUrl: string | null;
   conteudo: string;
+  totalLikes: number;
+  likedByMe: boolean;
   criadoEm: string;
 }
 

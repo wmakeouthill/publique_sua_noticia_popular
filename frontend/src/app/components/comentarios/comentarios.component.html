@@ -1,10 +1,29 @@
 <section class="comentarios-section">
-  <h2 class="comentarios-titulo">
-    Comentários
-    @if (total() > 0) {
-      <span class="total-badge">{{ total() }}</span>
-    }
-  </h2>
+  <div class="comentarios-header">
+    <h2 class="comentarios-titulo">
+      Comentários
+      @if (total() > 0) {
+        <span class="total-badge">{{ total() }}</span>
+      }
+    </h2>
+
+    <!-- Dropdown de ordenação -->
+    <div class="sort-container" (click)="$event.stopPropagation()">
+      <button class="sort-btn" (click)="sortDropdownOpen.update(v => !v)">
+        {{ ordenacaoLabel() }} ▾
+      </button>
+      @if (sortDropdownOpen()) {
+        <ul class="sort-dropdown">
+          @for (opcao of ordenacaoOpcoes; track opcao.valor) {
+            <li
+              [class.active]="ordenacao() === opcao.valor"
+              (click)="mudarOrdenacao(opcao.valor)"
+            >{{ opcao.label }}</li>
+          }
+        </ul>
+      }
+    </div>
+  </div>
 
   <!-- Formulário de novo comentário (apenas logado) -->
   @if (authService.autenticado()) {
@@ -78,6 +97,18 @@
             }
           </div>
           <p class="comentario-conteudo">{{ comentario.conteudo }}</p>
+          <div class="comentario-footer">
+            <button
+              class="comentario-like-btn"
+              [class.liked]="comentario.likedByMe"
+              [disabled]="!authService.autenticado() || togglendoLike().has(comentario.id)"
+              (click)="toggleLike(comentario)"
+              [title]="authService.autenticado() ? (comentario.likedByMe ? 'Descurtir' : 'Curtir') : 'Faça login para curtir'"
+            >
+              {{ comentario.likedByMe ? '❤️' : '🤍' }}
+              <span>{{ comentario.totalLikes }}</span>
+            </button>
+          </div>
         </li>
       }
     </ul>

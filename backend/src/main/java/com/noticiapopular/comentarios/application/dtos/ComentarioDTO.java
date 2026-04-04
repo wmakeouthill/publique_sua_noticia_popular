@@ -11,9 +11,12 @@ public record ComentarioDTO(
         String autorNome,
         String autorAvatarUrl,
         String conteudo,
+        long totalLikes,
+        boolean likedByMe,
         Instant criadoEm
 ) {
-    public static ComentarioDTO from(Comentario comentario, String autorNome, String autorAvatarUrl) {
+    public static ComentarioDTO from(Comentario comentario, String autorNome, String autorAvatarUrl,
+                                     long totalLikes, boolean likedByMe) {
         return new ComentarioDTO(
                 comentario.getId(),
                 comentario.getNoticiaId(),
@@ -21,6 +24,8 @@ public record ComentarioDTO(
                 autorNome,
                 autorAvatarUrl,
                 comentario.getConteudo(),
+                totalLikes,
+                likedByMe,
                 comentario.getCriadoEm()
         );
     }

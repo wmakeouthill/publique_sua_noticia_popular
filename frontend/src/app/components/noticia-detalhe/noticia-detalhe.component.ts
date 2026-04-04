@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NoticiaService } from '../../services/noticia.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { AuthService } from '../../services/auth.service';
+import { ReacaoService } from '../../services/reacao.service';
 import { Noticia } from '../../models/noticia.model';
 import { Categoria } from '../../models/categoria.model';
 import { TempoRelativoPipe } from '../../shared/pipes/tempo-relativo.pipe';
@@ -20,13 +21,17 @@ import { firstValueFrom } from 'rxjs';
 export class NoticiaDetalheComponent implements OnInit {
   private readonly noticiaService = inject(NoticiaService);
   private readonly categoriaService = inject(CategoriaService);
-  private readonly authService = inject(AuthService);
+  readonly authService = inject(AuthService);
+  private readonly reacaoService = inject(ReacaoService);
   private readonly route = inject(ActivatedRoute);
 
   readonly noticia = signal<Noticia | null>(null);
   readonly categoria = signal<Categoria | null>(null);
   readonly carregando = signal(false);
   readonly erro = signal<string | null>(null);
+  readonly totalLikes = signal(0);
+  readonly likedByMe = signal(false);
+  readonly toggling = signal(false);
 
   // Computed para verificar se o usuário atual é o autor da notícia logado
   readonly coverObjectPosition = computed(() => {
@@ -55,6 +60,8 @@ export class NoticiaDetalheComponent implements OnInit {
     try {
       const dbNoticia = await firstValueFrom(this.noticiaService.buscarPorId(id));
       this.noticia.set(dbNoticia);
+      this.totalLikes.set(dbNoticia.totalLikes ?? 0);
+      this.likedByMe.set(dbNoticia.likedByMe ?? false);
 
       // Busca categorias para exibir o nome no detalhe
       const cats = await firstValueFrom(this.categoriaService.buscarCategorias());
@@ -64,6 +71,20 @@ export class NoticiaDetalheComponent implements OnInit {
       this.erro.set('Não foi possível carregar a notícia. Ela pode ter sido removida ou não existir.');
     } finally {
       this.carregando.set(false);
+    }
+  }
+
+  async toggleLike(): Promise<void> {
+    if (!this.authService.autenticado() || this.toggling() || !this.noticia()) return;
+    this.toggling.set(true);
+    try {
+      const status = await firstValueFrom(
+        this.reacaoService.toggle({ alvoTipo: 'NOTICIA', alvoId: this.noticia()!.id })
+      );
+      this.totalLikes.set(status.total);
+      this.likedByMe.set(status.likedByMe);
+    } finally {
+      this.toggling.set(false);
     }
   }
 

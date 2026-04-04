@@ -24,8 +24,11 @@ public class ComentarioController {
     private final ExcluirComentarioUseCase excluirComentario;
 
     @GetMapping
-    public ResponseEntity<List<ComentarioDTO>> listar(@PathVariable String noticiaId) {
-        return ResponseEntity.ok(listarComentarios.executar(noticiaId));
+    public ResponseEntity<List<ComentarioDTO>> listar(
+            @PathVariable String noticiaId,
+            @RequestParam(defaultValue = "MAIS_RECENTE") String ordenacao,
+            @AuthenticationPrincipal String usuarioId) {
+        return ResponseEntity.ok(listarComentarios.executar(noticiaId, ordenacao, usuarioId));
     }
 
     @PostMapping
