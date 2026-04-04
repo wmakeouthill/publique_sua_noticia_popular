@@ -11,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { Categoria } from '../../models/categoria.model';
 
 interface Block {
-  type: 'paragraph' | 'header';
+  type: 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'list';
   content: string;
 }
 
@@ -45,6 +45,12 @@ export class EditorComponent implements OnInit {
   readonly showIaMenu = signal<{ visible: boolean; blockIndex: number; top: number; left: number }>({
     visible: false, blockIndex: 0, top: 0, left: 0
   });
+  readonly slashMenuIndex = signal(0);
+
+  // Ordem flat dos itens do slash menu (deve bater com a ordem no HTML)
+  private readonly SLASH_FORMAT_TYPES: Block['type'][] = ['h1', 'h2', 'h3', 'quote', 'list', 'paragraph'];
+  private readonly SLASH_IA_ESTILOS: Array<'formal' | 'criativo' | 'resumido'> = ['formal', 'criativo', 'resumido'];
+  private get SLASH_TOTAL() { return this.SLASH_FORMAT_TYPES.length + this.SLASH_IA_ESTILOS.length; }
 
   form = this.fb.group({
     titulo:      ['', [Validators.required, Validators.minLength(5)]],
@@ -243,23 +249,76 @@ export class EditorComponent implements OnInit {
     }
   }
 
+  // ─── Mudar tipo do bloco (formatação via slash command) ─────────────────────
+
+  mudarTipoBloco(index: number, tipo: Block['type']): void {
+    const updated = [...this.blocks()];
+    const conteudoLimpo = updated[index].content.replace(/^\/\s*/, '').trim();
+    updated[index] = { type: tipo, content: conteudoLimpo };
+    this.blocks.set(updated);
+    this.fecharIaMenu();
+    setTimeout(() => {
+      const el = this.getBlockEl(index);
+      if (el) {
+        el.innerText = conteudoLimpo;
+        el.focus();
+        // posiciona cursor no final
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+      }
+    }, 30);
+  }
+
+  getBlockClass(block: Block): string {
+    return `editable-block block-${block.type}`;
+  }
+
   // ─── Editor — manipulação de blocos ─────────────────────────────────────────
 
   onBlockKeydown(event: KeyboardEvent, index: number): void {
+    // Abre o menu
     if (event.key === '/') {
       event.preventDefault();
       const target = event.target as HTMLElement;
       const rect = target.getBoundingClientRect();
-      this.showIaMenu.set({
-        visible: true,
-        blockIndex: index,
-        top: rect.bottom + 6,
-        left: rect.left
-      });
+      this.slashMenuIndex.set(0);
+      this.showIaMenu.set({ visible: true, blockIndex: index, top: rect.bottom + 6, left: rect.left });
       return;
     }
 
-    this.fecharIaMenu();
+    // Navegação dentro do menu aberto
+    if (this.showIaMenu().visible) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        const next = (this.slashMenuIndex() + 1) % this.SLASH_TOTAL;
+        this.slashMenuIndex.set(next);
+        this.scrollSlashItem(next);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        const prev = (this.slashMenuIndex() - 1 + this.SLASH_TOTAL) % this.SLASH_TOTAL;
+        this.slashMenuIndex.set(prev);
+        this.scrollSlashItem(prev);
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.executarItemSlash(this.showIaMenu().blockIndex, this.slashMenuIndex());
+        return;
+      }
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.fecharIaMenu();
+        return;
+      }
+      // Qualquer outra tecla fecha o menu e continua o fluxo normal
+      this.fecharIaMenu();
+    }
 
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -278,6 +337,21 @@ export class EditorComponent implements OnInit {
     }
   }
 
+  private executarItemSlash(blockIndex: number, slashIndex: number): void {
+    if (slashIndex < this.SLASH_FORMAT_TYPES.length) {
+      this.mudarTipoBloco(blockIndex, this.SLASH_FORMAT_TYPES[slashIndex]);
+    } else {
+      this.refinarComIA(blockIndex, this.SLASH_IA_ESTILOS[slashIndex - this.SLASH_FORMAT_TYPES.length]);
+    }
+  }
+
+  private scrollSlashItem(index: number): void {
+    setTimeout(() => {
+      const items = document.querySelectorAll('.slash-list li');
+      (items[index] as HTMLElement)?.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
   onBlockInput(event: Event, index: number): void {
     const target = event.target as HTMLElement;
     const current = [...this.blocks()];
@@ -292,6 +366,7 @@ export class EditorComponent implements OnInit {
   fecharIaMenu(): void {
     if (this.showIaMenu().visible) {
       this.showIaMenu.set({ visible: false, blockIndex: 0, top: 0, left: 0 });
+      this.slashMenuIndex.set(0);
     }
   }
 
