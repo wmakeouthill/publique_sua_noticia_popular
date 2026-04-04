@@ -95,9 +95,23 @@
                         <span class="spinner">↻</span> Enviando imagem...
                       </div>
                     } @else if (block.content) {
-                      <div class="block-image-wrap">
-                        <img [src]="block.content" class="block-image" alt="Imagem" />
-                        <button type="button" class="btn-block-img-remove" (click)="removerBlocoImagem($index)">✕</button>
+                      <div class="img-layout-root" [class]="'img-layout-' + (block.layout ?? 'full')">
+                        <div class="img-toolbar">
+                          <button type="button" [class.active]="block.layout === 'left'" (click)="setImageLayout($index, 'left')" title="À esquerda">◧</button>
+                          <button type="button" [class.active]="!block.layout || block.layout === 'full'" (click)="setImageLayout($index, 'full')" title="Largura total">▣</button>
+                          <button type="button" [class.active]="block.layout === 'right'" (click)="setImageLayout($index, 'right')" title="À direita">◨</button>
+                          <span class="img-toolbar-sep"></span>
+                          <button type="button" class="btn-img-remove" (click)="removerBlocoImagem($index)" title="Remover">✕</button>
+                        </div>
+                        <div class="img-resizable" [style.width.%]="block.layout === 'full' ? 100 : (block.width ?? 40)">
+                          <img [src]="block.content" class="block-image" alt="Imagem" />
+                          @if (block.layout !== 'full') {
+                            <div class="img-resize-handle" (pointerdown)="startResize($event, $index)" title="Redimensionar"></div>
+                          }
+                        </div>
+                        @if (block.layout === 'left' || block.layout === 'right') {
+                          <div class="img-clearfix"></div>
+                        }
                       </div>
                     } @else {
                       <button type="button" class="block-image-placeholder" (click)="triggerBlocoFileInput($index)">

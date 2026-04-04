@@ -300,41 +300,101 @@
   margin: 0.5rem 0;
 }
 
-.block-image-wrap {
+/* Layout root — contém toolbar + imagem */
+.img-layout-root {
+  position: relative;
+}
+
+/* Layouts */
+.img-layout-left  .img-resizable { float: left;  margin: 0 1.5rem 0.5rem 0; }
+.img-layout-right .img-resizable { float: right; margin: 0 0 0.5rem 1.5rem; }
+.img-layout-full  .img-resizable { width: 100% !important; float: none; }
+
+.img-clearfix { clear: both; }
+
+/* Wrapper redimensionável */
+.img-resizable {
   position: relative;
   display: inline-block;
-  width: 100%;
+  min-width: 80px;
 }
 
 .block-image {
   width: 100%;
-  max-height: 480px;
-  object-fit: cover;
   display: block;
   border-radius: var(--radius-md);
+  max-height: 520px;
+  object-fit: cover;
 }
 
-.btn-block-img-remove {
+/* Handle de resize */
+.img-resize-handle {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: rgba(0,0,0,0.55);
-  color: white;
-  border: none;
-  border-radius: var(--radius-full);
-  width: 2rem;
-  height: 2rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  bottom: 5px;
+  right: 5px;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.35);
+  border-radius: 3px;
+  cursor: se-resize;
   opacity: 0;
   transition: opacity 0.15s;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0,0,0,0.25) 0,
+    rgba(0,0,0,0.25) 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 4px 4px;
 }
 
-.block-image-wrap:hover .btn-block-img-remove { opacity: 1; }
+.img-resizable:hover .img-resize-handle { opacity: 1; }
 
+/* Toolbar de layout */
+.img-toolbar {
+  display: none;
+  position: absolute;
+  top: -2.4rem;
+  left: 0;
+  z-index: 20;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.2rem 0.35rem;
+  gap: 0.15rem;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.img-layout-root:hover .img-toolbar { display: flex; }
+
+.img-toolbar button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.1s;
+}
+
+.img-toolbar button:hover  { background: var(--bg-tertiary); }
+.img-toolbar button.active { background: var(--bg-tertiary); border-color: var(--brand-primary); color: var(--brand-primary); }
+
+.img-toolbar-sep {
+  width: 1px;
+  height: 1.2rem;
+  background: var(--border-color);
+  margin: 0 0.2rem;
+}
+
+.btn-img-remove:hover { color: #ef4444 !important; background: rgba(239,68,68,0.1) !important; }
+
+/* Placeholder e loading */
 .block-image-placeholder {
   width: 100%;
   padding: 1.5rem;

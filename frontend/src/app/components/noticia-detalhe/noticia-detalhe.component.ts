@@ -66,13 +66,29 @@ export class NoticiaDetalheComponent implements OnInit {
       if (json.blocks) {
         let h = '';
         json.blocks.forEach((block: any) => {
-           if(block.type === 'paragraph') h += `<p>${block.data.text}</p>`;
-           if(block.type === 'header') h += `<h${block.data.level}>${block.data.text}</h${block.data.level}>`;
-           if(block.type === 'list') {
-              h += '<ul>';
-              block.data.items.forEach((item: string) => h += `<li>${item}</li>`);
-              h += '</ul>';
-           }
+          const text = block.data?.text ?? '';
+          if (block.type === 'paragraph') {
+            h += `<p>${text}</p>`;
+          } else if (block.type === 'h1') {
+            h += `<h1>${text}</h1>`;
+          } else if (block.type === 'h2') {
+            h += `<h2>${text}</h2>`;
+          } else if (block.type === 'h3') {
+            h += `<h3>${text}</h3>`;
+          } else if (block.type === 'quote') {
+            h += `<blockquote>${text}</blockquote>`;
+          } else if (block.type === 'list') {
+            const items: string[] = text ? text.split('\n').filter((i: string) => i) : (block.data?.items ?? []);
+            h += `<ul>${items.map((i: string) => `<li>${i}</li>`).join('')}</ul>`;
+          } else if (block.type === 'image' && text) {
+            const layout = block.data?.layout ?? 'full';
+            const width  = block.data?.width  ?? 100;
+            const style  = layout === 'left'  ? `float:left;width:${width}%;margin:0 1.5rem 1rem 0`
+                         : layout === 'right' ? `float:right;width:${width}%;margin:0 0 1rem 1.5rem`
+                         : 'width:100%;display:block';
+            const clear  = layout !== 'full' ? '<div style="clear:both"></div>' : '';
+            h += `<figure style="margin:1rem 0"><img src="${text}" style="${style};border-radius:8px;max-width:100%" /></figure>${clear}`;
+          }
         });
         return h;
       }

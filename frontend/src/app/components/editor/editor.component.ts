@@ -13,6 +13,8 @@ import { Categoria } from '../../models/categoria.model';
 interface Block {
   type: 'paragraph' | 'h1' | 'h2' | 'h3' | 'quote' | 'list' | 'image';
   content: string;
+  layout?: 'full' | 'left' | 'right';
+  width?: number; // porcentagem: 20–100
 }
 
 @Component({
@@ -112,9 +114,11 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       try {
         const json = JSON.parse(noticia.conteudo);
         if (json?.blocks) {
-          const parsed: Block[] = json.blocks.map((b: { type: string; data: { items?: string[]; text?: string } }) => ({
+          const parsed: Block[] = json.blocks.map((b: any) => ({
             type:    b.type as Block['type'],
-            content: b.type === 'list' ? b.data.items!.join('\n') : (b.data.text ?? '')
+            content: b.type === 'list' ? (b.data.items ?? []).join('\n') : (b.data.text ?? ''),
+            layout:  b.data?.layout,
+            width:   b.data?.width
           }));
           this.blocks.set(parsed.length > 0 ? parsed : [{ type: 'paragraph', content: '' }]);
         }
@@ -215,6 +219,52 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
   private extrairNomeArquivo(url: string): string | null {
     if (!url || !url.startsWith('/uploads/')) return null;
     return url.split('/').pop() ?? null;
+  }
+
+  // ─── Layout e resize de imagem inline ───────────────────────────────────────
+
+  private resizingBlock = -1;
+  private resizeStartX = 0;
+  private resizeStartWidth = 0;
+  private resizeContainerWidth = 0;
+  private onResizeMove: ((e: PointerEvent) => void) | null = null;
+  private onResizeUp: (() => void) | null = null;
+
+  setImageLayout(index: number, layout: 'full' | 'left' | 'right'): void {
+    const updated = [...this.blocks()];
+    const current = updated[index];
+    const width = layout === 'full' ? 100 : (current.width && current.width < 100 ? current.width : 40);
+    updated[index] = { ...current, layout, width };
+    this.blocks.set(updated);
+  }
+
+  startResize(event: PointerEvent, index: number): void {
+    event.preventDefault();
+    this.resizingBlock = index;
+    this.resizeStartX = event.clientX;
+    this.resizeStartWidth = this.blocks()[index].width ?? 100;
+    const wrap = (event.target as HTMLElement).closest('.img-resizable') as HTMLElement;
+    this.resizeContainerWidth = wrap?.parentElement?.offsetWidth ?? 600;
+
+    this.onResizeMove = (e: PointerEvent) => {
+      const delta = e.clientX - this.resizeStartX;
+      const pct = (delta / this.resizeContainerWidth) * 100;
+      const newW = Math.max(20, Math.min(100, this.resizeStartWidth + pct));
+      const updated = [...this.blocks()];
+      updated[this.resizingBlock] = { ...updated[this.resizingBlock], width: Math.round(newW) };
+      this.blocks.set(updated);
+    };
+
+    this.onResizeUp = () => {
+      this.resizingBlock = -1;
+      document.removeEventListener('pointermove', this.onResizeMove!);
+      document.removeEventListener('pointerup', this.onResizeUp!);
+      this.onResizeMove = null;
+      this.onResizeUp = null;
+    };
+
+    document.addEventListener('pointermove', this.onResizeMove);
+    document.addEventListener('pointerup', this.onResizeUp);
   }
 
   // ─── IA — título ────────────────────────────────────────────────────────────
@@ -643,7 +693,9 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
     const jsonConteudo = {
       blocks: this.blocks().map(b => ({
         type: b.type,
-        data: { text: b.content }
+        data: b.type === 'image'
+          ? { text: b.content, layout: b.layout ?? 'full', width: b.width ?? 100 }
+          : { text: b.content }
       }))
     };
 
