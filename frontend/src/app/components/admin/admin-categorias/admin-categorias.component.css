@@ -1,0 +1,61 @@
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.admin-header h1 { font-size: 2rem; font-weight: 800; margin: 0; }
+.admin-header p  { color: var(--text-secondary); margin: 0.25rem 0 0; }
+
+.admin-nav {
+  display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg); margin-bottom: 2rem; flex-wrap: wrap;
+}
+.admin-nav a {
+  padding: 0.5rem 1rem; border-radius: var(--radius-md);
+  color: var(--text-secondary); text-decoration: none;
+  font-weight: 500; transition: all var(--transition-fast);
+}
+.admin-nav a:hover, .admin-nav a.active { background: var(--brand-primary); color: white; }
+
+.form-card { padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 2rem; }
+.form-card h2 { font-size: 1.2rem; font-weight: 700; margin: 0 0 1.25rem; }
+
+.form-row { display: grid; grid-template-columns: 1fr 120px; gap: 1rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+.form-group input {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-md); padding: 0.6rem 0.875rem;
+  color: var(--text-primary); font-size: 0.95rem;
+}
+.form-group input:focus { outline: none; border-color: var(--brand-primary); }
+
+.form-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+.loading-state { text-align: center; padding: 3rem; }
+.loading-state .spinner {
+  font-size: 2rem; display: inline-block;
+  animation: spin 1s linear infinite; margin-bottom: 0.5rem;
+}
+
+.categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.cat-card {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.25rem; border-radius: var(--radius-lg);
+}
+.cat-icon { font-size: 2rem; flex-shrink: 0; }
+.cat-info { flex: 1; min-width: 0; }
+.cat-info h3 { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem; }
+.cat-info p  { font-size: 0.85rem; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cat-actions { display: flex; flex-direction: column; gap: 0.4rem; flex-shrink: 0; }
+
+.btn-danger {
+  background: rgba(239,68,68,0.15); color: #f87171;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

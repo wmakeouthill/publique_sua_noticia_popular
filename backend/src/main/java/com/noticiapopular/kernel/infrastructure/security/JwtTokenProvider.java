@@ -76,6 +76,20 @@ public class JwtTokenProvider {
                 .getSubject();
     }
 
+    public boolean ehRefreshToken(String token) {
+        try {
+            String tipo = Jwts.parser()
+                    .verifyWith(obterChave())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .get("tipo", String.class);
+            return "refresh".equals(tipo);
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
     private SecretKey obterChave() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);

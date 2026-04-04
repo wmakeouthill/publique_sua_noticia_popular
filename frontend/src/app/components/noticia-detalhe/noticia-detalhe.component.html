@@ -14,24 +14,30 @@
   <article class="noticia-article animate-fade-in">
     <header class="article-header">
       <div class="badges">
-        <span class="badge">{{ noticia()!.categoriaId }}</span>
+        @if (categoria()) {
+          <span class="badge">{{ categoria()!.icone }} {{ categoria()!.nome }}</span>
+        }
+        @if (noticia()!.status !== 'PUBLICADA') {
+          <span class="badge status-badge">{{ noticia()!.status }}</span>
+        }
       </div>
       <h1 class="article-title">{{ noticia()!.titulo }}</h1>
       <p class="article-summary">{{ noticia()!.resumo }}</p>
 
       <div class="article-meta">
         <div class="author-info">
-          <div class="avatar">👤</div>
+          <div class="avatar-icon">👤</div>
           <div>
-            <span class="author-name">Autor ID: {{ noticia()!.autorId }}</span>
-            <span class="publish-date">{{ noticia()!.publicadoEm | date:'longDate' }} · {{ noticia()!.visualizacoes }} visualizações</span>
+            <span class="publish-date">
+              Publicado {{ noticia()!.publicadoEm | tempoRelativo }} · {{ noticia()!.visualizacoes }} visualizações
+            </span>
           </div>
         </div>
-        
+
         @if (isAutor()) {
           <div class="actions">
             <a [routerLink]="['/editar-noticia', noticia()!.id]" class="btn btn-secondary btn-sm">
-              ✏️ Editar Notícia
+              ✏️ Editar
             </a>
           </div>
         }
@@ -44,8 +50,10 @@
       </figure>
     }
 
-    <!-- Aqui renderizamos o conteúdo tipado parseado do JSON do BD -->
-    <div class="article-content" [innerHTML]="getHtmlConteudo(noticia()!.conteudo)">
-    </div>
+    <div class="article-content" [innerHTML]="getHtmlConteudo(noticia()!.conteudo)"></div>
+
+    <footer class="article-footer">
+      <a routerLink="/" class="btn btn-secondary">← Voltar ao feed</a>
+    </footer>
   </article>
 }

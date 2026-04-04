@@ -8,7 +8,9 @@
       </div>
     }
     <div class="card-badges">
-      <span class="badge" (click)="clicarCategoria($event)">{{ noticia().categoriaId }}</span>
+      <span class="badge" (click)="clicarCategoria($event)">
+        {{ categoria()?.icone }} {{ categoria()?.nome ?? noticia().categoriaId }}
+      </span>
       @if (noticia().status !== 'PUBLICADA') {
         <span class="badge status-badge">{{ statusText }}</span>
       }
@@ -18,10 +20,10 @@
   <div class="card-content">
     <h3 class="card-title">{{ noticia().titulo }}</h3>
     <p class="card-summary">{{ noticia().resumo }}</p>
-    
+
     <div class="card-footer">
       <div class="meta-info">
-        <span class="date">{{ noticia().publicadoEm | date:'shortDate' }}</span>
+        <span class="date">{{ noticia().publicadoEm | tempoRelativo }}</span>
         <span class="views">👁️ {{ noticia().visualizacoes }}</span>
       </div>
     </div>

@@ -26,8 +26,9 @@
 <div class="feed-grid">
   @for (noticia of noticias(); track noticia.id) {
     <div class="animate-fade-in">
-      <app-noticia-card 
-        [noticia]="noticia" 
+      <app-noticia-card
+        [noticia]="noticia"
+        [categoriasMap]="categoriasMap()"
         (onCategoriaClick)="onFiltrarCategoria($event)" />
     </div>
   } @empty {

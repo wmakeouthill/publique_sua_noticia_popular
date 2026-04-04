@@ -1,0 +1,66 @@
+<div class="page-header animate-fade-in">
+  <div>
+    <h1>Minhas Publicações</h1>
+    <p>Gerencie as notícias que você criou</p>
+  </div>
+  <a routerLink="/nova-noticia" class="btn btn-primary">+ Nova Notícia</a>
+</div>
+
+@if (carregando() && noticias().length === 0) {
+  <div class="loading-state">
+    <div class="spinner">↻</div>
+    <p>Carregando suas notícias...</p>
+  </div>
+}
+
+@if (!carregando() && noticias().length === 0) {
+  <div class="empty-state glass-panel animate-fade-in">
+    <div class="icon">✍️</div>
+    <h3>Você ainda não publicou nada</h3>
+    <p>Comece agora criando sua primeira notícia.</p>
+    <a routerLink="/nova-noticia" class="btn btn-primary">Criar Notícia</a>
+  </div>
+}
+
+<div class="noticias-list">
+  @for (noticia of noticias(); track noticia.id) {
+    <div class="noticia-item glass-panel animate-fade-in">
+      @if (noticia.imagemUrl) {
+        <img [src]="noticia.imagemUrl" [alt]="noticia.titulo" class="noticia-thumb" loading="lazy">
+      } @else {
+        <div class="noticia-thumb-placeholder">📰</div>
+      }
+
+      <div class="noticia-info">
+        <div class="noticia-meta">
+          <span class="status-badge status-{{ noticia.status.toLowerCase() }}">
+            {{ statusLabel(noticia.status) }}
+          </span>
+          <span class="date">{{ noticia.criadoEm | tempoRelativo }}</span>
+          <span class="views">👁️ {{ noticia.visualizacoes }}</span>
+        </div>
+        <h3 class="noticia-titulo">{{ noticia.titulo }}</h3>
+        <p class="noticia-resumo">{{ noticia.resumo }}</p>
+      </div>
+
+      <div class="noticia-actions">
+        <a [routerLink]="['/noticia', noticia.id]" class="btn btn-sm btn-secondary">Ver</a>
+        <a [routerLink]="['/editar-noticia', noticia.id]" class="btn btn-sm btn-primary">Editar</a>
+        <button
+          class="btn btn-sm btn-danger"
+          [disabled]="excluindo() === noticia.id"
+          (click)="excluir(noticia.id, noticia.titulo)">
+          {{ excluindo() === noticia.id ? '...' : 'Excluir' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>
+
+@if (!ultimaPagina() && noticias().length > 0) {
+  <div class="load-more animate-fade-in">
+    <button class="btn btn-secondary" [disabled]="carregando()" (click)="carregarMais()">
+      {{ carregando() ? 'Carregando...' : 'Carregar mais' }}
+    </button>
+  </div>
+}

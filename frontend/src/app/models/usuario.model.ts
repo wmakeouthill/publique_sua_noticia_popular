@@ -4,6 +4,8 @@ export interface PerfilUsuario {
   nome: string;
   avatarUrl: string;
   papel: 'USUARIO' | 'ADMIN';
+  ativo: boolean;
+  criadoEm?: string;
 }
 
 export interface AuthResponse {

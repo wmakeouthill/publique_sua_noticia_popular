@@ -1,8 +1,9 @@
-import { Component, effect, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { useCategorias } from './composables/use-categorias';
 import { NoticiaService } from '../../services/noticia.service';
 import { NoticiaResumo } from '../../models/noticia.model';
+import { Categoria } from '../../models/categoria.model';
 import { NoticiaCardComponent } from '../../shared/components/noticia-card/noticia-card.component';
 import { firstValueFrom } from 'rxjs';
 
@@ -13,23 +14,27 @@ import { firstValueFrom } from 'rxjs';
   templateUrl: './feed.component.html',
   styleUrl: './feed.component.css'
 })
-export class FeedComponent {
+export class FeedComponent implements OnInit {
   private readonly noticiaService = inject(NoticiaService);
   readonly apiCategorias = useCategorias();
 
   readonly categorias = this.apiCategorias.categorias;
   readonly categoriaAtiva = signal<string | null>(null);
 
+  readonly categoriasMap = computed(() => {
+    const map = new Map<string, Categoria>();
+    this.categorias().forEach(c => map.set(c.id, c));
+    return map;
+  });
+
   readonly noticias = signal<NoticiaResumo[]>([]);
-  readonly carregandoNoticias = signal(true);
+  readonly carregandoNoticias = signal(false);
   readonly pagina = signal(0);
   readonly ultimaPagina = signal(false);
 
-  constructor() {
-    effect(() => {
-      this.apiCategorias.carregar();
-      this.carregarNoticias();
-    });
+  ngOnInit(): void {
+    this.apiCategorias.carregar();
+    this.carregarNoticias();
   }
 
   async carregarNoticias(novaBusca = true): Promise<void> {

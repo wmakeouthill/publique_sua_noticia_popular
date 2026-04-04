@@ -7,18 +7,24 @@
 
     <nav class="nav-links">
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
-      <a routerLink="/explorar" routerLinkActive="active">Explorar</a>
-      
+
       @if (auth.autenticado()) {
         <a routerLink="/minhas-noticias" routerLinkActive="active">Minhas Publicações</a>
+      }
+
+      @if (auth.usuarioAtual()?.papel === 'ADMIN') {
+        <a routerLink="/admin" routerLinkActive="active">Admin</a>
       }
     </nav>
 
     <div class="actions">
       @if (auth.autenticado()) {
         <div class="user-menu">
+          @if (auth.usuarioAtual()?.avatarUrl) {
+            <img [src]="auth.usuarioAtual()!.avatarUrl" [alt]="auth.usuarioAtual()!.nome" class="avatar" />
+          }
           <span class="greeting">Olá, {{ auth.usuarioAtual()?.nome?.split(' ')?.[0] }}</span>
-          <a routerLink="/nova-noticia" class="btn btn-primary">Nova Notícia</a>
+          <a routerLink="/nova-noticia" class="btn btn-primary btn-sm">+ Notícia</a>
           <button (click)="logout()" class="btn btn-secondary btn-sm">Sair</button>
         </div>
       } @else {

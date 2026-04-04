@@ -57,9 +57,9 @@ docker-compose logs -f backend
 
 Depois que os serviços estiverem prontos, acesse no seu navegador:
 
-- **Frontend (UI):** [http://localhost:4200](http://localhost:4200)
-- **Backend (API):** [http://localhost:8080/api/v1](http://localhost:8080/api/v1)
-- **Health Check do Backend:** [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
+- **Frontend (UI):** [http://localhost:4300](http://localhost:4300)
+- **Backend (API):** [http://localhost:8082/api/v1](http://localhost:8082/api/v1)
+- **Health Check do Backend:** [http://localhost:8082/actuator/health](http://localhost:8082/actuator/health)
 
 ### 6. Parar a Aplicação
 
@@ -115,7 +115,7 @@ docker compose -f docker-compose.prod.yml down
 ```text
 publique_sua_noticia_popular/
 ├── backend/          # API Java 21 com Spring Boot (Porta 8080)
-├── frontend/         # Aplicação Angular 21 (Porta 4200)
+├── frontend/         # Aplicação Angular 21 (Porta 4300)
 ├── docker-compose.yml# Orquestrador dos contêineres
 ├── .env              # Variáveis de ambiente
 └── README.md         # Documentação atual

@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: noticiapopular-postgres
     ports:
-      - "5432:5432"
+      - "${PG_HOST_PORT:-5433}:5432"
     environment:
       POSTGRES_DB: ${PG_DATABASE:-noticiapopular}
       POSTGRES_USER: ${PG_USER:-noticiapopular}
@@ -37,7 +37,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: noticiapopular-backend
     ports:
-      - "8080:8080"
+      - "${BACKEND_HOST_PORT:-8082}:8080"
       - "5005:5005"
     volumes:
       - ./backend:/app
@@ -48,6 +48,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PG_DATABASE:-noticiapopular}
       SPRING_DATASOURCE_USERNAME: ${PG_USER:-noticiapopular}
       SPRING_DATASOURCE_PASSWORD: ${PG_PASSWORD}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4300,http://localhost:4200}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
@@ -75,12 +76,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: noticiapopular-frontend
     ports:
-      - "4200:4200"
+      - "4300:4200"
     volumes:
       - ./frontend:/app
       - frontend-node-modules:/app/node_modules
     environment:
-      NG_APP_API_URL: ${NG_APP_API_URL:-http://localhost:8080/api/v1}
+      NG_APP_API_URL: ${NG_APP_API_URL:-http://localhost:8082/api/v1}
       NG_APP_GOOGLE_CLIENT_ID: ${NG_APP_GOOGLE_CLIENT_ID:-}
     depends_on:
       - backend

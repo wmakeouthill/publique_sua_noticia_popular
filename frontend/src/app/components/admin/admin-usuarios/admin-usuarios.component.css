@@ -1,0 +1,61 @@
+.admin-header { margin-bottom: 1.5rem; }
+.admin-header h1 { font-size: 2rem; font-weight: 800; margin: 0; }
+.admin-header p  { color: var(--text-secondary); margin: 0.25rem 0 0; }
+
+.admin-nav {
+  display: flex; gap: 0.5rem; padding: 0.75rem 1rem;
+  border-radius: var(--radius-lg); margin-bottom: 2rem; flex-wrap: wrap;
+}
+.admin-nav a {
+  padding: 0.5rem 1rem; border-radius: var(--radius-md);
+  color: var(--text-secondary); text-decoration: none;
+  font-weight: 500; transition: all var(--transition-fast);
+}
+.admin-nav a:hover, .admin-nav a.active { background: var(--brand-primary); color: white; }
+
+.loading-state { text-align: center; padding: 3rem; color: var(--text-secondary); }
+.loading-state .spinner {
+  font-size: 2rem; display: inline-block;
+  animation: spin 1s linear infinite; margin-bottom: 0.75rem;
+}
+.empty-state { text-align: center; padding: 3rem; }
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+.usuarios-table {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  overflow-x: auto;
+}
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 1rem 1.25rem; text-align: left; }
+th { font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.08); }
+td { border-bottom: 1px solid rgba(255,255,255,0.04); }
+tr:last-child td { border-bottom: none; }
+tr.inativo td { opacity: 0.5; }
+
+.usuario-info { display: flex; align-items: center; gap: 0.75rem; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.avatar-placeholder {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--brand-primary); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1rem;
+}
+
+.role-badge {
+  font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: var(--radius-full);
+}
+.role-admin   { background: rgba(168,85,247,0.15); color: #c084fc; }
+.role-usuario { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+
+.status-dot { font-size: 0.85rem; font-weight: 600; }
+.status-dot.ativo  { color: #4ade80; }
+.status-dot:not(.ativo) { color: #f87171; }
+
+.btn-danger {
+  background: rgba(239,68,68,0.15); color: #f87171;
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

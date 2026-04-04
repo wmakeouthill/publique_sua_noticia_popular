@@ -39,6 +39,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PG_DATABASE:-noticiapopular}
       SPRING_DATASOURCE_USERNAME: ${PG_USER:-noticiapopular}
       SPRING_DATASOURCE_PASSWORD: ${PG_PASSWORD}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4300,http://localhost:4200}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
@@ -72,7 +73,7 @@ services:
         NG_APP_API_URL: ${NG_APP_API_URL:-http://localhost:8080/api/v1}
         NG_APP_GOOGLE_CLIENT_ID: ${NG_APP_GOOGLE_CLIENT_ID:-}
     ports:
-      - "4200:80"
+      - "4300:80"
     depends_on:
       backend:
         condition: service_healthy

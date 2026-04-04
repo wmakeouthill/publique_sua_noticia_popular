@@ -1,0 +1,65 @@
+<div class="admin-header animate-fade-in">
+  <h1>Painel Administrativo</h1>
+  <p>Visão geral do portal</p>
+</div>
+
+<nav class="admin-nav glass-panel animate-fade-in">
+  <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Dashboard</a>
+  <a routerLink="/admin/usuarios" routerLinkActive="active">Usuários</a>
+  <a routerLink="/admin/categorias" routerLinkActive="active">Categorias</a>
+</nav>
+
+@if (carregando()) {
+  <div class="loading-state">
+    <div class="spinner">↻</div>
+    <p>Carregando dados...</p>
+  </div>
+}
+
+@if (dashboard(); as d) {
+  <div class="stats-grid animate-fade-in">
+    <div class="stat-card glass-panel">
+      <div class="stat-icon">👥</div>
+      <div class="stat-value">{{ d.totalUsuarios }}</div>
+      <div class="stat-label">Usuários</div>
+    </div>
+    <div class="stat-card glass-panel">
+      <div class="stat-icon">📰</div>
+      <div class="stat-value">{{ d.totalNoticias }}</div>
+      <div class="stat-label">Notícias</div>
+    </div>
+    <div class="stat-card glass-panel">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value">{{ d.noticiasPublicadas }}</div>
+      <div class="stat-label">Publicadas</div>
+    </div>
+    <div class="stat-card glass-panel">
+      <div class="stat-icon">📝</div>
+      <div class="stat-value">{{ d.noticiasRascunho }}</div>
+      <div class="stat-label">Rascunhos</div>
+    </div>
+    <div class="stat-card glass-panel">
+      <div class="stat-icon">🏷️</div>
+      <div class="stat-value">{{ d.totalCategorias }}</div>
+      <div class="stat-label">Categorias</div>
+    </div>
+  </div>
+
+  <div class="quick-links glass-panel animate-fade-in">
+    <h2>Ações rápidas</h2>
+    <div class="links-grid">
+      <a routerLink="/admin/usuarios" class="quick-link">
+        <span>👥</span><span>Gerenciar Usuários</span>
+      </a>
+      <a routerLink="/admin/categorias" class="quick-link">
+        <span>🏷️</span><span>Gerenciar Categorias</span>
+      </a>
+      <a routerLink="/nova-noticia" class="quick-link">
+        <span>✍️</span><span>Nova Notícia</span>
+      </a>
+      <a routerLink="/" class="quick-link">
+        <span>🏠</span><span>Ver Portal</span>
+      </a>
+    </div>
+  </div>
+}

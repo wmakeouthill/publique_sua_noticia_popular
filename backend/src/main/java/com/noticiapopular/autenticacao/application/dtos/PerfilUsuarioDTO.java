@@ -10,6 +10,7 @@ public record PerfilUsuarioDTO(
         String nome,
         String avatarUrl,
         String papel,
+        boolean ativo,
         Instant criadoEm
 ) {
     public static PerfilUsuarioDTO from(Usuario usuario) {
@@ -19,6 +20,7 @@ public record PerfilUsuarioDTO(
                 usuario.getNome(),
                 usuario.getAvatarUrl(),
                 usuario.getPapel().name(),
+                usuario.isAtivo(),
                 usuario.getCriadoEm()
         );
     }

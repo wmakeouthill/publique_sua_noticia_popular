@@ -45,8 +45,11 @@ export class AuthService {
       return;
     }
 
+    // Restaura do cache e libera o app imediatamente
     this.restaurarPerfilCache();
+    this.carregando.set(false);
 
+    // Valida com o servidor em background (sem bloquear a UI)
     try {
       const perfil = await firstValueFrom(
         this.http.get<PerfilUsuario>(`${environment.apiUrl}/auth/perfil`)
@@ -56,23 +59,39 @@ export class AuthService {
       if (this.deveInvalidarSessao(e)) {
         this.limparSessao();
       }
-    } finally {
-      this.carregando.set(false);
     }
   }
 
   async loginComGoogle(credential: string): Promise<boolean> {
     try {
-      this.carregando.set(true);
       const res = await firstValueFrom(
         this.http.post<AuthResponse>(`${environment.apiUrl}/auth/google`, { googleToken: credential })
       );
-
       this.salvarSessao(res.accessToken, res.refreshToken);
-      await this.iniciarSessao();
-      return this.autenticado();
-    } catch (e) {
-      this.carregando.set(false);
+
+      // Busca o perfil completo após o login
+      const perfil = await firstValueFrom(
+        this.http.get<PerfilUsuario>(`${environment.apiUrl}/auth/perfil`)
+      );
+      this.definirSessaoAutenticada(perfil);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async refreshToken(): Promise<boolean> {
+    const refreshToken = this.isBrowser ? localStorage.getItem(this.REFRESH_TOKEN_KEY) : null;
+    if (!refreshToken) return false;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      );
+      this.salvarSessao(res.accessToken, res.refreshToken);
+      return true;
+    } catch {
+      this.limparSessao();
       return false;
     }
   }

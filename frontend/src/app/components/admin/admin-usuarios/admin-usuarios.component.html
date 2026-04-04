@@ -1,0 +1,75 @@
+<div class="admin-header animate-fade-in">
+  <h1>Gerenciar Usuários</h1>
+  <p>Ative ou desative contas no portal</p>
+</div>
+
+<nav class="admin-nav glass-panel animate-fade-in">
+  <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Dashboard</a>
+  <a routerLink="/admin/usuarios" routerLinkActive="active">Usuários</a>
+  <a routerLink="/admin/categorias" routerLinkActive="active">Categorias</a>
+</nav>
+
+@if (carregando()) {
+  <div class="loading-state">
+    <div class="spinner">↻</div>
+    <p>Carregando usuários...</p>
+  </div>
+}
+
+@if (!carregando() && usuarios().length === 0) {
+  <div class="empty-state glass-panel animate-fade-in">
+    <div class="icon">👥</div>
+    <p>Nenhum usuário encontrado.</p>
+  </div>
+}
+
+<div class="usuarios-table glass-panel animate-fade-in">
+  @if (usuarios().length > 0) {
+    <table>
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Email</th>
+          <th>Papel</th>
+          <th>Cadastrado</th>
+          <th>Status</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of usuarios(); track u.id) {
+          <tr [class.inativo]="!u.ativo">
+            <td class="usuario-info">
+              @if (u.avatarUrl) {
+                <img [src]="u.avatarUrl" [alt]="u.nome" class="avatar">
+              } @else {
+                <div class="avatar-placeholder">{{ u.nome[0] }}</div>
+              }
+              <span>{{ u.nome }}</span>
+            </td>
+            <td>{{ u.email }}</td>
+            <td>
+              <span class="role-badge role-{{ u.papel.toLowerCase() }}">{{ u.papel }}</span>
+            </td>
+            <td>{{ u.criadoEm | tempoRelativo }}</td>
+            <td>
+              <span class="status-dot" [class.ativo]="u.ativo">
+                {{ u.ativo ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+            <td>
+              <button
+                class="btn btn-sm"
+                [class.btn-danger]="u.ativo"
+                [class.btn-primary]="!u.ativo"
+                [disabled]="alterando() === u.id"
+                (click)="alterarStatus(u)">
+                {{ alterando() === u.id ? '...' : (u.ativo ? 'Desativar' : 'Ativar') }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

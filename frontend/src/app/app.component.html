@@ -1,14 +1,8 @@
-@if (!auth.carregando()) {
-  <div class="app-container">
-    <app-navbar />
-    <main class="main-content">
-      <router-outlet />
-    </main>
-    <app-footer />
-  </div>
-} @else {
-  <div class="initial-loading">
-    <div class="spinner">📰</div>
-    <p>Carregando Portal...</p>
-  </div>
-}
+<div class="app-container">
+  <app-navbar />
+  <main class="main-content">
+    <router-outlet />
+  </main>
+  <app-footer />
+</div>
+<app-toast />

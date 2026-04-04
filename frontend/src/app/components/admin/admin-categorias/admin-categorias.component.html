@@ -1,0 +1,61 @@
+<div class="admin-header animate-fade-in">
+  <div>
+    <h1>Gerenciar Categorias</h1>
+    <p>Crie e organize as categorias do portal</p>
+  </div>
+  <button class="btn btn-primary" (click)="abrirFormNova()">+ Nova Categoria</button>
+</div>
+
+<nav class="admin-nav glass-panel animate-fade-in">
+  <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Dashboard</a>
+  <a routerLink="/admin/usuarios" routerLinkActive="active">Usuários</a>
+  <a routerLink="/admin/categorias" routerLinkActive="active">Categorias</a>
+</nav>
+
+@if (mostrarForm()) {
+  <div class="form-card glass-panel animate-fade-in">
+    <h2>{{ editandoId() ? 'Editar Categoria' : 'Nova Categoria' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome *</label>
+          <input formControlName="nome" type="text" placeholder="Ex: Tecnologia" />
+        </div>
+        <div class="form-group form-group-sm">
+          <label>Ícone (emoji)</label>
+          <input formControlName="icone" type="text" placeholder="💻" maxlength="4" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <input formControlName="descricao" type="text" placeholder="Breve descrição..." />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || salvando()">
+          {{ salvando() ? 'Salvando...' : (editandoId() ? 'Atualizar' : 'Criar') }}
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (carregando()) {
+  <div class="loading-state"><div class="spinner">↻</div><p>Carregando...</p></div>
+}
+
+<div class="categorias-grid animate-fade-in">
+  @for (cat of categorias(); track cat.id) {
+    <div class="cat-card glass-panel">
+      <div class="cat-icon">{{ cat.icone || '📁' }}</div>
+      <div class="cat-info">
+        <h3>{{ cat.nome }}</h3>
+        <p>{{ cat.descricao }}</p>
+      </div>
+      <div class="cat-actions">
+        <button class="btn btn-sm btn-secondary" (click)="abrirFormEditar(cat)">Editar</button>
+        <button class="btn btn-sm btn-danger" (click)="desativar(cat)">Desativar</button>
+      </div>
+    </div>
+  }
+</div>
