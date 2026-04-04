@@ -12,10 +12,11 @@ export class NoticiaService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/noticias`;
 
-  feed(pagina = 0, tamanho = 12, categoriaId?: string, busca?: string): Observable<Pagina<NoticiaResumo>> {
+  feed(pagina = 0, tamanho = 12, categoriaId?: string, busca?: string, ordenacao = 'MAIS_RECENTE'): Observable<Pagina<NoticiaResumo>> {
     let params = new HttpParams()
       .set('pagina', pagina)
-      .set('tamanho', tamanho);
+      .set('tamanho', tamanho)
+      .set('ordenacao', ordenacao);
 
     if (categoriaId) params = params.set('categoriaId', categoriaId);
     if (busca) params = params.set('busca', busca);

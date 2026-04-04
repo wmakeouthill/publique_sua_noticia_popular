@@ -5,22 +5,45 @@
   </div>
 </div>
 
-<div class="categories-filter glass-panel animate-fade-in">
-  <button 
-    class="filter-btn" 
-    [class.active]="categoriaAtiva() === null"
-    (click)="onFiltrarCategoria(null)">
-    🌟 Destaques
-  </button>
-  
-  @for (cat of categorias(); track cat.id) {
-    <button 
-      class="filter-btn" 
-      [class.active]="categoriaAtiva() === cat.id"
-      (click)="onFiltrarCategoria(cat.id)">
-      {{ cat.icone }} {{ cat.nome }}
+<div class="filter-bar animate-fade-in">
+  <div class="categories-filter glass-panel" #filtroContainer>
+    <button
+      class="filter-btn"
+      [class.active]="categoriaAtiva() === null"
+      (click)="onFiltrarCategoria(null)">
+      🌟 Destaques
     </button>
-  }
+
+    @for (cat of categorias(); track cat.id) {
+      <button
+        class="filter-btn"
+        [class.active]="categoriaAtiva() === cat.id"
+        (click)="onFiltrarCategoria(cat.id)">
+        {{ cat.icone }} {{ cat.nome }}
+      </button>
+    }
+  </div>
+
+  <div class="sort-container">
+    <button class="sort-btn glass-panel" (click)="toggleSortDropdown($event)">
+      <span class="sort-icon">⇅</span>
+      <span class="sort-label">{{ ordenacaoAtualLabel() }}</span>
+    </button>
+
+    @if (sortDropdownOpen()) {
+      <div class="sort-dropdown glass-panel animate-fade-in">
+        @for (opcao of ordenacaoOpcoes; track opcao.valor) {
+          <button
+            class="sort-option"
+            [class.active]="ordenacaoAtiva() === opcao.valor"
+            (click)="ordenarPor(opcao.valor)">
+            <span>{{ opcao.icone }}</span>
+            {{ opcao.label }}
+          </button>
+        }
+      </div>
+    }
+  </div>
 </div>
 
 <div class="feed-grid">

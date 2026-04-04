@@ -29,11 +29,18 @@ public class NoticiaController {
             @RequestParam(required = false) String categoriaId,
             @RequestParam(required = false) String busca,
             @RequestParam(defaultValue = "0") int pagina,
-            @RequestParam(defaultValue = "12") int tamanho) {
+            @RequestParam(defaultValue = "12") int tamanho,
+            @RequestParam(defaultValue = "MAIS_RECENTE") String ordenacao) {
 
         var filtro = new FiltroNoticiaRequest(categoriaId, busca);
-        var pageable = PageRequest.of(pagina, tamanho, Sort.by("publicadoEm").descending());
 
+        Sort sort = switch (ordenacao) {
+            case "MAIS_ANTIGO" -> Sort.by("publicadoEm").ascending();
+            case "MAIS_VISTO"  -> Sort.by("visualizacoes").descending();
+            default            -> Sort.by("publicadoEm").descending();
+        };
+
+        var pageable = PageRequest.of(pagina, tamanho, sort);
         return ResponseEntity.ok(listarNoticiasFeed.executar(filtro, pageable));
     }
 

@@ -12,6 +12,12 @@
   padding: 2rem 1.5rem;
 }
 
+@media (max-width: 640px) {
+  .main-content {
+    padding: 1rem 0.75rem;
+  }
+}
+
 .initial-loading {
   height: 100vh;
   display: flex;
