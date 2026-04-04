@@ -206,9 +206,21 @@ export class EditorComponent implements OnInit, AfterViewChecked, OnDestroy {
       .join('\n\n');
 
     if (!conteudoTexto) {
-      this.notification.warning('Escreva algum conteúdo antes de pedir para a IA reescrever.');
+      this.notification.warning('Escreva algum conteúdo antes de pedir para a IA organizar.');
       return;
     }
+
+    if (conteudoTexto.length < 150) {
+      this.notification.warning('Escreva pelo menos 150 caracteres antes de pedir para a IA organizar o conteúdo.');
+      return;
+    }
+
+    const confirmado = window.confirm(
+      'Você já terminou de escrever a notícia?\n\n' +
+      'A IA vai organizar o conteúdo como uma matéria jornalística, ' +
+      'usando apenas o que você escreveu, sem inventar fatos.'
+    );
+    if (!confirmado) return;
 
     this.carregandoIa.set(true);
     try {

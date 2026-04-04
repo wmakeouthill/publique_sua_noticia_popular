@@ -18,18 +18,18 @@ public class ReescreverNoticiaUseCase {
 
     public TextoGeradoResponse executar(ReescreverNoticiaRequest request) {
         String prompt = """
-                Você é um editor-chefe de um portal de notícias online. Reescreva o artigo abaixo \
-                como uma notícia jornalística profissional, clara e impactante.
+                Você é um editor de um portal de notícias. Organize o texto abaixo como uma matéria \
+                jornalística, contando a história de forma clara e estruturada.
 
-                TÍTULO ATUAL: %s
+                MANCHETE: %s
 
-                CONTEÚDO ATUAL:
+                CONTEÚDO ESCRITO PELO AUTOR:
                 %s
 
                 Retorne SOMENTE um JSON válido, sem markdown, no formato abaixo:
                 {
-                  "titulo": "manchete jornalística impactante, máximo 100 caracteres",
-                  "resumo": "lead da notícia com as informações principais, máximo 200 caracteres",
+                  "titulo": "manchete fiel ao conteúdo, máximo 100 caracteres",
+                  "resumo": "lead com as informações principais presentes no texto, máximo 200 caracteres",
                   "paragrafos": [
                     "primeiro parágrafo",
                     "segundo parágrafo",
@@ -37,10 +37,11 @@ public class ReescreverNoticiaUseCase {
                   ]
                 }
 
-                Regras:
-                - Mantenha os fatos e informações do texto original
-                - Use linguagem objetiva, direta e jornalística
-                - Estruture com pirâmide invertida (mais importante primeiro)
+                Regras obrigatórias:
+                - Use APENAS os fatos, nomes, números e informações presentes no texto acima
+                - Não invente detalhes, contextos, citações ou informações que não estejam no original
+                - Organize em estrutura jornalística (pirâmide invertida: mais importante primeiro)
+                - Use linguagem objetiva e direta
                 - Mínimo de 3 parágrafos, máximo de 8
                 - Texto em português brasileiro
                 """.formatted(request.titulo(), request.conteudo());
