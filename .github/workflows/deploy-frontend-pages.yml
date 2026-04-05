@@ -41,7 +41,7 @@ jobs:
 
       - name: Build Angular app
         env:
-          NG_APP_API_URL: ${{ vars.NG_APP_API_URL }}
+          NG_APP_API_URL: ${{ vars.NG_APP_API_URL || 'https://168.138.133.43/api/v1' }}
           NG_APP_GOOGLE_CLIENT_ID: ${{ vars.NG_APP_GOOGLE_CLIENT_ID }}
         run: |
           $repoName = '${{ github.event.repository.name }}'
