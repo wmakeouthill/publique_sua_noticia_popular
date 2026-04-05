@@ -2,7 +2,8 @@ param(
     [string]$SshKeyPath = (Join-Path $PSScriptRoot '..\test-news.key'),
     [string]$SshUser = 'ubuntu',
     [string]$SshHost = '168.138.133.43',
-    [string]$PublicBaseUrl = 'http://168.138.133.43',
+    # Dominio com HTTPS (ex: 'meusite.com.br'). Deixe vazio para usar HTTP com o IP.
+    [string]$Domain = '',
     [string]$RemoteAppDir = '/home/ubuntu/noticia-popular',
     [string]$EnvFilePath = '',
     [string]$BackendImage = 'noticia-popular-backend:deploy',
@@ -19,9 +20,9 @@ if ([string]::IsNullOrWhiteSpace($EnvFilePath)) {
     $EnvFilePath = Join-Path $projectRoot '.env'
 }
 
-$EnvFilePath      = (Resolve-Path $EnvFilePath).Path
-$SshKeyPath       = (Resolve-Path $SshKeyPath).Path
-$ComposeFilePath  = Join-Path $projectRoot 'docker-compose.deploy.yml'
+$EnvFilePath        = (Resolve-Path $EnvFilePath).Path
+$SshKeyPath         = (Resolve-Path $SshKeyPath).Path
+$ComposeFilePath    = Join-Path $projectRoot 'docker-compose.deploy.yml'
 $backendDockerfile  = Join-Path $projectRoot 'backend\Dockerfile'
 $frontendDockerfile = Join-Path $projectRoot 'frontend\Dockerfile'
 
@@ -69,11 +70,6 @@ function New-SecureTemporarySshKey {
     return $targetPath
 }
 
-function Get-NormalizedUrl {
-    param([Parameter(Mandatory = $true)][string]$Url)
-    return $Url.Trim().TrimEnd('/')
-}
-
 function Get-EnvValue {
     param(
         [Parameter(Mandatory = $true)][string[]]$Lines,
@@ -95,6 +91,21 @@ function Test-RequiredEnvValue {
     }
 }
 
+# --- URLs de acordo com o modo (HTTP ou HTTPS) ---
+
+$hasHttps      = -not [string]::IsNullOrWhiteSpace($Domain)
+$origin        = "http://$SshHost"
+$backendApiUrl = "http://$SshHost/api/v1"
+
+if ($hasHttps) {
+    $origin        = "https://$Domain"
+    $backendApiUrl = "https://$Domain/api/v1"
+    Write-Host "Modo: HTTPS - dominio: $Domain" -ForegroundColor Cyan
+} else {
+    Write-Host "Modo: HTTP  - ip: $SshHost (sem dominio)" -ForegroundColor Cyan
+    Write-Host "Para HTTPS execute: .\deploy.ps1 -Domain 'seu-dominio.com'" -ForegroundColor DarkYellow
+}
+
 # --- Validacoes iniciais ---
 
 if (-not (Test-Path $SshKeyPath)) {
@@ -103,16 +114,6 @@ if (-not (Test-Path $SshKeyPath)) {
 
 if (-not (Test-Path $EnvFilePath)) {
     throw ".env nao encontrado: $EnvFilePath"
-}
-
-$publicBaseUrl = Get-NormalizedUrl -Url $PublicBaseUrl
-$publicUri     = [System.Uri]$publicBaseUrl
-$publicHost    = $publicUri.Host
-
-# URL do backend para o Angular (sem proxy nginx, acesso direto na porta 8080)
-$backendApiUrl = "${publicBaseUrl}:8080/api/v1"
-if ($publicUri.Port -eq 8080) {
-    $backendApiUrl = "${publicBaseUrl}/api/v1"
 }
 
 $envLines = @(
@@ -128,13 +129,91 @@ Test-RequiredEnvValue -Lines $envLines -Key 'JWT_SECRET'
 # Monta .env de deploy sobrescrevendo variaveis de URL
 $deployLines = @($envLines | Where-Object {
     $_ -notmatch '^CORS_ORIGINS=' -and
-    $_ -notmatch '^NG_APP_GOOGLE_CLIENT_ID='
+    $_ -notmatch '^NG_APP_GOOGLE_CLIENT_ID=' -and
+    $_ -notmatch '^NG_APP_API_URL='
 })
-$deployLines += "CORS_ORIGINS=$publicBaseUrl"
+$deployLines += "CORS_ORIGINS=$origin"
 
 $googleClientId = Get-EnvValue -Lines $envLines -Key 'GOOGLE_CLIENT_ID'
 if (-not [string]::IsNullOrWhiteSpace($googleClientId)) {
     $deployLines += "NG_APP_GOOGLE_CLIENT_ID=$googleClientId"
+}
+
+# --- Configs nginx ---
+
+# HTTP: porta 80, sem SSL, proxia para os containers internos
+$nginxHttpConf = @"
+server {
+    listen 80;
+    server_name _;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location /api/ {
+        proxy_pass         http://backend:8080/api/;
+        proxy_set_header   Host              `$host;
+        proxy_set_header   X-Real-IP         `$remote_addr;
+        proxy_set_header   X-Forwarded-For   `$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto `$scheme;
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        proxy_pass       http://frontend:80/;
+        proxy_set_header Host `$host;
+        proxy_http_version 1.1;
+    }
+}
+"@
+
+# HTTPS: redireciona 80→443, SSL com certificado Let's Encrypt
+$nginxHttpsConf = ''
+if ($hasHttps) {
+    $nginxHttpsConf = @"
+server {
+    listen 80;
+    server_name $Domain;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://`$host`$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name $Domain;
+
+    ssl_certificate     /etc/letsencrypt/live/$Domain/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$Domain/privkey.pem;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location /api/ {
+        proxy_pass         http://backend:8080/api/;
+        proxy_set_header   Host              `$host;
+        proxy_set_header   X-Real-IP         `$remote_addr;
+        proxy_set_header   X-Forwarded-For   `$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto `$scheme;
+        proxy_read_timeout 60s;
+    }
+
+    location / {
+        proxy_pass       http://frontend:80/;
+        proxy_set_header Host `$host;
+        proxy_http_version 1.1;
+    }
+}
+"@
 }
 
 # --- Diretorio temporario ---
@@ -142,12 +221,14 @@ if (-not [string]::IsNullOrWhiteSpace($googleClientId)) {
 $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("noticia-popular-deploy-" + [System.Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
 
-$backendTar      = Join-Path $tempRoot 'backend-image.tar'
-$frontendTar     = Join-Path $tempRoot 'frontend-image.tar'
-$remoteEnvFile   = Join-Path $tempRoot '.env.deploy'
-$remoteCompose   = Join-Path $tempRoot 'docker-compose.yml'
-$remoteDeploySh  = Join-Path $tempRoot 'remote-deploy.sh'
-$secureSshKey    = New-SecureTemporarySshKey -SourcePath $SshKeyPath -TempDirectory $tempRoot
+$backendTar         = Join-Path $tempRoot 'backend-image.tar'
+$frontendTar        = Join-Path $tempRoot 'frontend-image.tar'
+$remoteEnvFile      = Join-Path $tempRoot '.env.deploy'
+$remoteCompose      = Join-Path $tempRoot 'docker-compose.yml'
+$remoteDeploySh     = Join-Path $tempRoot 'remote-deploy.sh'
+$nginxHttpConfFile  = Join-Path $tempRoot 'nginx-http.conf'
+$nginxHttpsConfFile = Join-Path $tempRoot 'nginx-https.conf'
+$secureSshKey       = New-SecureTemporarySshKey -SourcePath $SshKeyPath -TempDirectory $tempRoot
 
 $sshArgs = @(
     '-i', $secureSshKey,
@@ -162,8 +243,16 @@ try {
         "command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1"
     ))
 
-    New-Utf8File -Path $remoteEnvFile -Lines $deployLines
+    New-Utf8File -Path $remoteEnvFile    -Lines $deployLines
+    New-Utf8File -Path $nginxHttpConfFile -Lines ($nginxHttpConf -split "`r?`n")
     Copy-Item -LiteralPath $ComposeFilePath -Destination $remoteCompose -Force
+
+    # nginx-https.conf so e enviado quando ha dominio
+    $scpFiles = @($remoteCompose, $remoteEnvFile, $nginxHttpConfFile)
+    if ($hasHttps -and -not [string]::IsNullOrWhiteSpace($nginxHttpsConf)) {
+        New-Utf8File -Path $nginxHttpsConfFile -Lines ($nginxHttpsConf -split "`r?`n")
+        $scpFiles += $nginxHttpsConfFile
+    }
 
     if (-not $SkipBuild) {
         Write-Host "`n==> Buildando backend..." -ForegroundColor Yellow
@@ -178,7 +267,7 @@ try {
         Invoke-NativeCommand -Command 'docker' -Arguments @(
             'build', '--pull',
             '--build-arg', "NG_APP_API_URL=$backendApiUrl",
-            '--build-arg', "NG_APP_GOOGLE_CLIENT_ID=$(Get-EnvValue -Lines $envLines -Key 'GOOGLE_CLIENT_ID')",
+            '--build-arg', "NG_APP_GOOGLE_CLIENT_ID=$googleClientId",
             '-t', $FrontendImage,
             '-f', $frontendDockerfile,
             (Join-Path $projectRoot 'frontend')
@@ -188,16 +277,32 @@ try {
     Write-Host "`n==> Exportando imagens..." -ForegroundColor Yellow
     Invoke-NativeCommand -Command 'docker' -Arguments @('image', 'save', '-o', $backendTar,  $BackendImage)
     Invoke-NativeCommand -Command 'docker' -Arguments @('image', 'save', '-o', $frontendTar, $FrontendImage)
+    $scpFiles += @($backendTar, $frontendTar)
 
+    # Script remoto: escolhe nginx.conf baseado em certificado existente
+    $certDomain = if ($hasHttps) { $Domain } else { '' }
     $remoteDeployScript = @"
 set -euo pipefail
 
 cd '$RemoteAppDir'
+mkdir -p certbot-www certbot-certs
+
+CERT_DOMAIN="$certDomain"
+
+if [ -n "`$CERT_DOMAIN" ] && [ -f "certbot-certs/live/`$CERT_DOMAIN/fullchain.pem" ]; then
+    echo '==> Certificado SSL encontrado, ativando HTTPS'
+    cp nginx-https.conf nginx.conf
+else
+    echo '==> Sem certificado SSL, usando HTTP'
+    cp nginx-http.conf nginx.conf
+fi
 
 echo '==> Carregando imagens...'
 docker load -i backend-image.tar
 docker load -i frontend-image.tar
 docker pull postgres:16-alpine
+docker pull nginx:1.27-alpine
+docker pull certbot/certbot:latest
 
 echo '==> Subindo servicos...'
 docker compose --project-name noticia-popular --env-file .env -f docker-compose.yml up -d --remove-orphans
@@ -209,6 +314,7 @@ echo '==> Status dos containers:'
 docker compose --project-name noticia-popular --env-file .env -f docker-compose.yml ps
 "@
     New-Utf8File -Path $remoteDeploySh -Lines ($remoteDeployScript -split "`r?`n")
+    $scpFiles += $remoteDeploySh
 
     Write-Host "`n==> Criando diretorio remoto..." -ForegroundColor Yellow
     Invoke-NativeCommand -Command 'ssh' -Arguments ($sshArgs + @(
@@ -218,11 +324,7 @@ docker compose --project-name noticia-popular --env-file .env -f docker-compose.
 
     Write-Host "`n==> Enviando arquivos (SCP)..." -ForegroundColor Yellow
     Invoke-NativeCommand -Command 'scp' -Arguments ($sshArgs + @(
-        $remoteCompose,
-        $remoteEnvFile,
-        $backendTar,
-        $frontendTar,
-        $remoteDeploySh,
+        $scpFiles,
         "${SshUser}@${SshHost}:$RemoteAppDir/"
     ))
 
@@ -233,8 +335,16 @@ docker compose --project-name noticia-popular --env-file .env -f docker-compose.
     ))
 
     Write-Host "`nDeploy concluido!" -ForegroundColor Green
-    Write-Host "  Frontend: $publicBaseUrl" -ForegroundColor Green
-    Write-Host "  Backend:  $backendApiUrl" -ForegroundColor Green
+    Write-Host "  Site:    $origin" -ForegroundColor Green
+    Write-Host "  API:     $backendApiUrl" -ForegroundColor Green
+
+    if (-not $hasHttps) {
+        Write-Host ''
+        Write-Host 'Para ativar HTTPS:' -ForegroundColor DarkYellow
+        Write-Host '  1. Aponte um dominio para este IP' -ForegroundColor DarkYellow
+        Write-Host "  2. .\scripts\certbot-init.ps1 -Domain 'seu-dominio.com' -Email 'seu@email.com'" -ForegroundColor DarkYellow
+        Write-Host "  3. .\scripts\deploy.ps1 -Domain 'seu-dominio.com' -SkipBuild" -ForegroundColor DarkYellow
+    }
 }
 finally {
     if (Test-Path $tempRoot) {

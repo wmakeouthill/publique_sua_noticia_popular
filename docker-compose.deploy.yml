@@ -31,8 +31,6 @@ services:
 
   backend:
     image: noticia-popular-backend:deploy
-    ports:
-      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SERVER_PORT: 8080
@@ -67,13 +65,46 @@ services:
 
   frontend:
     image: noticia-popular-frontend:deploy
-    ports:
-      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
     mem_limit: 96m
     memswap_limit: 192m
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot-www:/var/www/certbot:ro
+      - ./certbot-certs:/etc/letsencrypt:ro
+    depends_on:
+      - frontend
+    mem_limit: 64m
+    memswap_limit: 128m
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot-www:/var/www/certbot
+      - ./certbot-certs:/etc/letsencrypt
+    entrypoint: >
+      /bin/sh -c
+      'trap exit TERM;
+       while :; do
+         certbot renew --quiet;
+         sleep 12h & wait $${!};
+       done'
+    depends_on:
+      - nginx
     restart: unless-stopped
     networks:
       - noticiapopular-network
