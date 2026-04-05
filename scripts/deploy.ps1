@@ -93,17 +93,17 @@ function Test-RequiredEnvValue {
 
 # --- URLs de acordo com o modo (HTTP ou HTTPS) ---
 
-$hasHttps      = -not [string]::IsNullOrWhiteSpace($Domain)
-$origin        = "http://$SshHost"
-$backendApiUrl = "http://$SshHost/api/v1"
+$hasHttps  = -not [string]::IsNullOrWhiteSpace($Domain)
+$origin    = "http://$SshHost"
+$certName  = $SshHost   # nome do cert no letsencrypt (IP ou dominio)
 
 if ($hasHttps) {
-    $origin        = "https://$Domain"
-    $backendApiUrl = "https://$Domain/api/v1"
+    $origin   = "https://$Domain"
+    $certName = $Domain
     Write-Host "Modo: HTTPS - dominio: $Domain" -ForegroundColor Cyan
 } else {
-    Write-Host "Modo: HTTP  - ip: $SshHost (sem dominio)" -ForegroundColor Cyan
-    Write-Host "Para HTTPS execute: .\deploy.ps1 -Domain 'seu-dominio.com'" -ForegroundColor DarkYellow
+    Write-Host "Modo: HTTP  - ip: $SshHost" -ForegroundColor Cyan
+    Write-Host "Para HTTPS execute: .\scripts\enable-https.ps1" -ForegroundColor DarkYellow
 }
 
 # --- Validacoes iniciais ---
@@ -168,13 +168,12 @@ server {
 }
 "@
 
-# HTTPS: redireciona 80→443, SSL com certificado Let's Encrypt
-$nginxHttpsConf = ''
-if ($hasHttps) {
-    $nginxHttpsConf = @"
+# HTTPS: redireciona 80->443, SSL com certificado Let's Encrypt
+# Gerado sempre (para IP ou dominio) — remote script so usa se o cert existir
+$nginxHttpsConf = @"
 server {
     listen 80;
-    server_name $Domain;
+    server_name $certName;
 
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
@@ -187,10 +186,10 @@ server {
 
 server {
     listen 443 ssl;
-    server_name $Domain;
+    server_name $certName;
 
-    ssl_certificate     /etc/letsencrypt/live/$Domain/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/$Domain/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/$certName/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$certName/privkey.pem;
     ssl_protocols       TLSv1.2 TLSv1.3;
     ssl_prefer_server_ciphers off;
 
@@ -214,7 +213,6 @@ server {
     }
 }
 "@
-}
 
 # --- Diretorio temporario ---
 
@@ -247,12 +245,8 @@ try {
     New-Utf8File -Path $nginxHttpConfFile -Lines ($nginxHttpConf -split "`r?`n")
     Copy-Item -LiteralPath $ComposeFilePath -Destination $remoteCompose -Force
 
-    # nginx-https.conf so e enviado quando ha dominio
-    $scpFiles = @($remoteCompose, $remoteEnvFile, $nginxHttpConfFile)
-    if ($hasHttps -and -not [string]::IsNullOrWhiteSpace($nginxHttpsConf)) {
-        New-Utf8File -Path $nginxHttpsConfFile -Lines ($nginxHttpsConf -split "`r?`n")
-        $scpFiles += $nginxHttpsConfFile
-    }
+    New-Utf8File -Path $nginxHttpsConfFile -Lines ($nginxHttpsConf -split "`r?`n")
+    $scpFiles = @($remoteCompose, $remoteEnvFile, $nginxHttpConfFile, $nginxHttpsConfFile)
 
     if (-not $SkipBuild) {
         Write-Host "`n==> Buildando backend..." -ForegroundColor Yellow
@@ -263,10 +257,11 @@ try {
             (Join-Path $projectRoot 'backend')
         )
 
-        Write-Host "`n==> Buildando frontend (API_URL=$backendApiUrl)..." -ForegroundColor Yellow
+        # URL relativa: nginx proxia /api/ para o backend em ambos HTTP e HTTPS
+        Write-Host "`n==> Buildando frontend..." -ForegroundColor Yellow
         Invoke-NativeCommand -Command 'docker' -Arguments @(
             'build', '--pull',
-            '--build-arg', "NG_APP_API_URL=$backendApiUrl",
+            '--build-arg', 'NG_APP_API_URL=/api/v1',
             '--build-arg', "NG_APP_GOOGLE_CLIENT_ID=$googleClientId",
             '-t', $FrontendImage,
             '-f', $frontendDockerfile,
@@ -279,17 +274,16 @@ try {
     Invoke-NativeCommand -Command 'docker' -Arguments @('image', 'save', '-o', $frontendTar, $FrontendImage)
     $scpFiles += @($backendTar, $frontendTar)
 
-    # Script remoto: escolhe nginx.conf baseado em certificado existente
-    $certDomain = if ($hasHttps) { $Domain } else { '' }
+    # Script remoto: escolhe nginx.conf baseado em certificado existente em /etc/letsencrypt
     $remoteDeployScript = @"
 set -euo pipefail
 
 cd '$RemoteAppDir'
-mkdir -p certbot-www certbot-certs
+mkdir -p certbot-www
 
-CERT_DOMAIN="$certDomain"
-
-if [ -n "`$CERT_DOMAIN" ] && [ -f "certbot-certs/live/`$CERT_DOMAIN/fullchain.pem" ]; then
+# Certbot instalado via snap armazena certs em /etc/letsencrypt (caminho do host,
+# montado no container nginx). Checa se o cert para este host existe.
+if [ -f "/etc/letsencrypt/live/$certName/fullchain.pem" ]; then
     echo '==> Certificado SSL encontrado, ativando HTTPS'
     cp nginx-https.conf nginx.conf
 else
@@ -302,7 +296,6 @@ docker load -i backend-image.tar
 docker load -i frontend-image.tar
 docker pull postgres:16-alpine
 docker pull nginx:1.27-alpine
-docker pull certbot/certbot:latest
 
 echo '==> Subindo servicos...'
 docker compose --project-name noticia-popular --env-file .env -f docker-compose.yml up -d --remove-orphans
@@ -323,10 +316,7 @@ docker compose --project-name noticia-popular --env-file .env -f docker-compose.
     ))
 
     Write-Host "`n==> Enviando arquivos (SCP)..." -ForegroundColor Yellow
-    Invoke-NativeCommand -Command 'scp' -Arguments ($sshArgs + @(
-        $scpFiles,
-        "${SshUser}@${SshHost}:$RemoteAppDir/"
-    ))
+    Invoke-NativeCommand -Command 'scp' -Arguments ($sshArgs + $scpFiles + @("${SshUser}@${SshHost}:$RemoteAppDir/"))
 
     Write-Host "`n==> Executando deploy remoto..." -ForegroundColor Yellow
     Invoke-NativeCommand -Command 'ssh' -Arguments ($sshArgs + @(
@@ -335,15 +325,12 @@ docker compose --project-name noticia-popular --env-file .env -f docker-compose.
     ))
 
     Write-Host "`nDeploy concluido!" -ForegroundColor Green
-    Write-Host "  Site:    $origin" -ForegroundColor Green
-    Write-Host "  API:     $backendApiUrl" -ForegroundColor Green
+    Write-Host "  Site: $origin" -ForegroundColor Green
 
     if (-not $hasHttps) {
         Write-Host ''
-        Write-Host 'Para ativar HTTPS:' -ForegroundColor DarkYellow
-        Write-Host '  1. Aponte um dominio para este IP' -ForegroundColor DarkYellow
-        Write-Host "  2. .\scripts\certbot-init.ps1 -Domain 'seu-dominio.com' -Email 'seu@email.com'" -ForegroundColor DarkYellow
-        Write-Host "  3. .\scripts\deploy.ps1 -Domain 'seu-dominio.com' -SkipBuild" -ForegroundColor DarkYellow
+        Write-Host 'Para ativar HTTPS com o IP atual:' -ForegroundColor DarkYellow
+        Write-Host "  .\scripts\enable-https.ps1" -ForegroundColor DarkYellow
     }
 }
 finally {
