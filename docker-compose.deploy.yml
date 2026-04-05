@@ -1,0 +1,86 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PG_DATABASE:-noticiapopular}
+      POSTGRES_USER: ${PG_USER:-noticiapopular}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    command: >
+      postgres
+        -c shared_buffers=96MB
+        -c work_mem=2MB
+        -c effective_cache_size=192MB
+        -c maintenance_work_mem=48MB
+        -c max_connections=25
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${PG_USER:-noticiapopular} -d ${PG_DATABASE:-noticiapopular}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    mem_limit: 320m
+    memswap_limit: 640m
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  backend:
+    image: noticia-popular-backend:deploy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PG_DATABASE:-noticiapopular}
+      SPRING_DATASOURCE_USERNAME: ${PG_USER:-noticiapopular}
+      SPRING_DATASOURCE_PASSWORD: ${PG_PASSWORD}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600000}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      ADMIN_GOOGLE_EMAILS: ${ADMIN_GOOGLE_EMAILS:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q -O- http://localhost:8080/actuator/health | grep -q UP",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    mem_limit: 512m
+    memswap_limit: 1024m
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+  frontend:
+    image: noticia-popular-frontend:deploy
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    mem_limit: 96m
+    memswap_limit: 192m
+    restart: unless-stopped
+    networks:
+      - noticiapopular-network
+
+volumes:
+  postgres-data:
+
+networks:
+  noticiapopular-network:
+    driver: bridge
