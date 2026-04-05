@@ -121,11 +121,25 @@ $remoteSetupLines = @(
     "echo '    (requer porta 80 acessivel e nginx no ar)'",
     "sudo certbot certonly --non-interactive --agree-tos --preferred-profile shortlived --webroot -w '$RemoteAppDir/certbot-www' --ip-address $SshHost $certbotEmailArgs --deploy-hook '$RemoteAppDir/reload-nginx.sh'",
     '',
+    '# Verifica se o cert foi emitido e exibe o caminho',
+    "CERT_PATH=\"/etc/letsencrypt/live/$SshHost/fullchain.pem\"",
+    'if [ ! -f "$CERT_PATH" ]; then',
+    "    echo 'ERRO: certificado nao encontrado em ' `$CERT_PATH",
+    "    echo 'Verifique se a porta 80 esta acessivel e o nginx esta no ar.'",
+    '    exit 1',
+    'fi',
+    "echo '==> Cert emitido em:' `$CERT_PATH",
+    '',
+    '# Ativa HTTPS no nginx imediatamente (nao depende de redeploy)',
+    "echo '==> Ativando HTTPS no nginx...'",
+    "cp '$RemoteAppDir/nginx-https.conf' '$RemoteAppDir/nginx.conf'",
+    "docker compose --project-name noticia-popular --env-file '$RemoteAppDir/.env' -f '$RemoteAppDir/docker-compose.yml' exec -T nginx nginx -s reload 2>/dev/null \\",
+    "    || docker compose --project-name noticia-popular --env-file '$RemoteAppDir/.env' -f '$RemoteAppDir/docker-compose.yml' restart nginx",
+    '',
     'echo "==> Testando renovacao automatica..."',
     'sudo certbot renew --dry-run',
     '',
-    'echo ""',
-    'echo "==> Certificado emitido com sucesso!"'
+    "echo '==> HTTPS ativado com sucesso!'"
 )
 
 try {
@@ -152,15 +166,6 @@ try {
         "${SshUser}@${SshHost}",
         "bash '$RemoteAppDir/enable-https-remote.sh' && rm -f '$RemoteAppDir/enable-https-remote.sh'"
     ))
-
-    # Passo 3: redeploy — remote-deploy.sh detecta o cert e ativa nginx HTTPS
-    Write-Host "`n==> Passo 3: ativando HTTPS no nginx..." -ForegroundColor Yellow
-    & $deployScriptPath `
-        -SshKeyPath $SshKeyPath `
-        -SshUser $SshUser `
-        -SshHost $SshHost `
-        -RemoteAppDir $RemoteAppDir `
-        -SkipBuild
 
     Write-Host "`nHTTPS ativado!" -ForegroundColor Green
     Write-Host "  Acesse: https://$SshHost" -ForegroundColor Green
