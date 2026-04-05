@@ -283,7 +283,7 @@ mkdir -p certbot-www
 
 # Certbot instalado via snap armazena certs em /etc/letsencrypt (caminho do host,
 # montado no container nginx). Checa se o cert para este host existe.
-if [ -f "/etc/letsencrypt/live/$certName/fullchain.pem" ]; then
+if sudo test -f "/etc/letsencrypt/live/$certName/fullchain.pem" 2>/dev/null; then
     echo '==> Certificado SSL encontrado, ativando HTTPS'
     cp nginx-https.conf nginx.conf
 else
