@@ -4,6 +4,7 @@ param(
     [string]$SshHost = '168.138.133.43',
     # Dominio com HTTPS (ex: 'meusite.com.br'). Deixe vazio para usar HTTP com o IP.
     [string]$Domain = '',
+    [string]$GitHubPagesOrigin = 'https://wmakeouthill.github.io',
     [string]$RemoteAppDir = '/home/ubuntu/noticia-popular',
     [string]$EnvFilePath = '',
     [string]$BackendImage = 'noticia-popular-backend:deploy',
@@ -106,6 +107,12 @@ if ($hasHttps) {
     Write-Host "Para HTTPS execute: .\scripts\enable-https.ps1" -ForegroundColor DarkYellow
 }
 
+$corsOrigins = @($origin)
+if (-not [string]::IsNullOrWhiteSpace($GitHubPagesOrigin)) {
+    $corsOrigins += $GitHubPagesOrigin
+}
+$corsOrigins = $corsOrigins | Select-Object -Unique
+
 # --- Validacoes iniciais ---
 
 if (-not (Test-Path $SshKeyPath)) {
@@ -132,7 +139,7 @@ $deployLines = @($envLines | Where-Object {
     $_ -notmatch '^NG_APP_GOOGLE_CLIENT_ID=' -and
     $_ -notmatch '^NG_APP_API_URL='
 })
-$deployLines += "CORS_ORIGINS=$origin"
+$deployLines += "CORS_ORIGINS=$($corsOrigins -join ',')"
 
 $googleClientId = Get-EnvValue -Lines $envLines -Key 'GOOGLE_CLIENT_ID'
 if (-not [string]::IsNullOrWhiteSpace($googleClientId)) {
