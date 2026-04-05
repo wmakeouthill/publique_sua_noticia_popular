@@ -122,7 +122,7 @@ $remoteSetupLines = @(
     "sudo certbot certonly --non-interactive --agree-tos --preferred-profile shortlived --webroot -w '$RemoteAppDir/certbot-www' --ip-address $SshHost $certbotEmailArgs --deploy-hook '$RemoteAppDir/reload-nginx.sh'",
     '',
     '# Verifica se o cert foi emitido e exibe o caminho',
-    "CERT_PATH=\"/etc/letsencrypt/live/$SshHost/fullchain.pem\"",
+    "CERT_PATH=/etc/letsencrypt/live/$SshHost/fullchain.pem",
     'if [ ! -f "$CERT_PATH" ]; then',
     "    echo 'ERRO: certificado nao encontrado em ' `$CERT_PATH",
     "    echo 'Verifique se a porta 80 esta acessivel e o nginx esta no ar.'",
