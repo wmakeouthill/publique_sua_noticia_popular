@@ -40,6 +40,7 @@ jobs:
         run: npm ci
 
       - name: Build Angular app
+        shell: pwsh
         env:
           NG_APP_API_URL: ${{ vars.NG_APP_API_URL || 'https://168.138.133.43/api/v1' }}
           NG_APP_GOOGLE_CLIENT_ID: ${{ vars.NG_APP_GOOGLE_CLIENT_ID }}
