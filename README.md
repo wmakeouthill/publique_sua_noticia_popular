@@ -10,6 +10,19 @@ O **Portal de Notícias Populares** é uma aplicação completa (Full-Stack) vol
 - **IA e Autenticação:** Gemini API, Google OAuth2
 - **Infraestrutura:** Docker e Docker Compose
 
+## GitHub Pages do Frontend
+
+O frontend pode ser publicado no GitHub Pages consumindo o backend hospedado na Oracle VPS.
+
+Pré-requisitos práticos:
+
+- Backend exposto em HTTPS válido.
+- `CORS_ORIGINS` no backend contendo `https://wmakeouthill.github.io`.
+- Variável de repositório `NG_APP_API_URL` apontando para a API pública, por exemplo `https://api.seudominio.com/api/v1`.
+- Variável de repositório `NG_APP_GOOGLE_CLIENT_ID` com o client id do Google, se o login Google estiver habilitado.
+
+O workflow está em [.github/workflows/deploy-frontend-pages.yml](d:/publique_sua_noticia_popular/.github/workflows/deploy-frontend-pages.yml) e publica automaticamente a cada push na branch `main`.
+
 ---
 
 ## 🚀 Como Executar Localmente (com PowerShell)

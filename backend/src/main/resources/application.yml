@@ -61,7 +61,7 @@ app:
     diretorio: ${UPLOAD_DIR:./uploads}
     tamanho-maximo-mb: 10
   cors:
-    origens-permitidas: ${CORS_ORIGINS:http://localhost:4200}
+    origens-permitidas: ${CORS_ORIGINS:http://localhost:4200,https://wmakeouthill.github.io}
 
 management:
   endpoints:
